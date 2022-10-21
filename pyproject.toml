@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "fastapi-starter"
+version = "0.1.0"
+description = ""
+authors = ["Timo Wilhelm <mail@timowilhelm.com>"]
+readme = "README.md"
+packages = [{include = "fastapi_starter"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = {extras = ["dotenv"], version = "^1.10.2"}
+uvicorn = "^0.19.0"
+fastapi = "^0.85.1"
+fastapi-azure-auth = "^3.5.0"
+opencensus = "^0.11.0"
+opencensus-ext-azure = "^1.1.7"
+slowapi = "^0.1.6"
+
+
+[tool.poetry.group.dev.dependencies]
+autopep8 = "^1.7.0"
+flake8 = "^5.0.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
