@@ -1,44 +1,23 @@
-from typing import Optional, Union
-
-from pydantic import AnyHttpUrl, BaseSettings, Field
-
 from uvicorn import run
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from fastapi import FastAPI, Security, Request, Response
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-
-from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
-from fastapi_azure_auth.user import User
 
 from opencensus.trace import samplers
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.ext.azure.trace_exporter import AzureExporter
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from .tracer_middleware import TracerMiddleware
+from app.settings import settings
+from app.azure_scheme import azure_scheme
+from app.limiter import limiter
+from app.middleware.tracing import TracerMiddleware
+from app.routers import users
 
-
-class Settings(BaseSettings):
-    SECRET_KEY: str = Field(default='', env='SECRET_KEY')
-    BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = [
-        'http://localhost:8000']
-    OPENAPI_CLIENT_ID: str = Field(default='', env='OPENAPI_CLIENT_ID')
-    APP_CLIENT_ID: str = Field(default='', env='APP_CLIENT_ID')
-    TENANT_ID: str = Field(default='', env='TENANT_ID')
-    APPLICATIONINSIGHTS_CONNECTION_STRING: str = Field(
-        default='InstrumentationKey=00000000-0000-0000-0000-000000000000',
-        env='APPLICATIONINSIGHTS_CONNECTION_STRING')
-
-    class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
-        case_sensitive = True
-
-
-settings = Settings()
 
 app = FastAPI(
     swagger_ui_oauth2_redirect_url='/oauth2-redirect',
@@ -63,24 +42,6 @@ app.middleware("http")(TracerMiddleware(
     trace_exporter=azure_trace_exporter))
 
 
-def key_func(request: Request) -> str:
-    user: Optional[User] = request.state.user
-    if user is not None:
-        return str(user.claims.get('sub'))
-
-    if (request.client is not None):
-        return request.client.host
-
-    return "default"
-
-
-limiter = Limiter(
-    key_func=key_func,
-    default_limits=["100/minute"],
-    headers_enabled=True,
-    storage_uri="memory://",
-)
-
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -94,13 +55,9 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=['*'],
     )
 
-azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
-    app_client_id=settings.APP_CLIENT_ID,
-    tenant_id=settings.TENANT_ID,
-    scopes={
-        f'api://{settings.APP_CLIENT_ID}/user_impersonation': 'user_impersonation',
-    }
-)
+
+app.include_router(users.router, prefix="/users", tags=["users"], dependencies=[
+                   Security(azure_scheme, scopes=['user_impersonation'])])
 
 
 @app.on_event('startup')
@@ -111,11 +68,9 @@ async def load_config() -> None:
     await azure_scheme.openid_config.load_config()
 
 
-@app.get("/", dependencies=[Security(azure_scheme)])
-@limiter.limit("5/minute")
-async def hello_user(request: Request, response: Response):
-    user: User = request.state.user
-    return {"message": f"Hello {user.name}!"}
+@app.get("/", include_in_schema=False)
+async def root(request: Request, response: Response):
+    return RedirectResponse("/docs")
 
 
 if __name__ == '__main__':
