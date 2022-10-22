@@ -2,7 +2,7 @@ from typing import Optional, Union
 
 from pydantic import AnyHttpUrl, BaseSettings, Field
 
-import uvicorn
+from uvicorn import run
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from fastapi import FastAPI, Security, Request, Response
@@ -11,14 +11,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
 from fastapi_azure_auth.user import User
 
-from tracer_middleware import TracerMiddleware
-
 from opencensus.trace import samplers
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.ext.azure.trace_exporter import AzureExporter
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+
+from .tracer_middleware import TracerMiddleware
 
 
 class Settings(BaseSettings):
@@ -119,4 +119,4 @@ async def hello_user(request: Request, response: Response):
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', reload=True)
+    run('main:app', reload=True)
