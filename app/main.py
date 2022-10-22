@@ -12,10 +12,8 @@ from opencensus.ext.azure.trace_exporter import AzureExporter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app.settings import settings
-from app.azure_scheme import azure_scheme
-from app.limiter import limiter
-from app.middleware.tracing import TracerMiddleware
+from app import settings, azure_scheme, limiter
+from app.middleware import TracerMiddleware
 from app.routers import users
 
 

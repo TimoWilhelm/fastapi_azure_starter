@@ -1,7 +1,7 @@
 
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
 
-from app.settings import settings
+from app import settings
 
 azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     app_client_id=settings.APP_CLIENT_ID,

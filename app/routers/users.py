@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Response
 
 from fastapi_azure_auth.user import User
 
-from app.limiter import limiter
+from app import limiter
 
 router = APIRouter()
 
