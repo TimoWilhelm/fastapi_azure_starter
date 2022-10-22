@@ -1,26 +1,29 @@
-FROM python:3.10-alpine3.16
+FROM python:3.10 as requirements
+
+ENV POETRY_VERSION=1.2.2
+
+WORKDIR /tmp
+
+RUN pip install "poetry==$POETRY_VERSION"
+
+COPY poetry.lock pyproject.toml /tmp/
+
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+FROM python:3.10-slim-bullseye
 
 ENV PYTHONFAULTHANDLER=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONHASHSEED=random \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.2.2
+    PIP_DEFAULT_TIMEOUT=100
 
-# System deps
-RUN apk add --update gcc libc-dev linux-headers && rm -rf /var/cache/apk/*
-RUN pip install "poetry==$POETRY_VERSION"
+COPY --from=requirements /tmp/requirements.txt /app/requirements.txt
 
-# Copy only requirements to cache them in docker layer
-WORKDIR /code
-COPY poetry.lock pyproject.toml /code/
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
-# Project initialization
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-root --no-dev --no-interaction --no-ansi
-
-COPY ./app /code/app
+COPY ./app /app
 
 EXPOSE 80
 
