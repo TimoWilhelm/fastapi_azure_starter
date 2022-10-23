@@ -1,3 +1,3 @@
-from .tracing import TracerMiddleware
+from .request_tracing import RequestTracingMiddleware
 
-__all__ = ["TracerMiddleware"]
+__all__ = ["RequestTracingMiddleware"]

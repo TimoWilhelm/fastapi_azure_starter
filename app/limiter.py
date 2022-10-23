@@ -10,7 +10,7 @@ from slowapi import Limiter
 def key_func(request: Request) -> str:
     user: Optional[User] = request.state.user
     if user is not None:
-        return str(user.claims.get('sub'))
+        return str(user.claims.get('oid') or user.claims.get('sub'))
 
     if (request.client is not None):
         return request.client.host
@@ -23,4 +23,6 @@ limiter = Limiter(
     default_limits=["100/minute"],
     headers_enabled=True,
     storage_uri="memory://",
+
+
 )

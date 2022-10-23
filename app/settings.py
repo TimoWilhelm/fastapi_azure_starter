@@ -4,6 +4,7 @@ from pydantic import AnyHttpUrl, BaseSettings, Field
 
 
 class Settings(BaseSettings):
+    LOG_LEVEL: str = Field(default="INFO", env="LOG_LEVEL")
     SECRET_KEY: str = Field(default='', env='SECRET_KEY')
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = [
         'http://localhost:8000']

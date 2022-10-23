@@ -1,17 +1,17 @@
-import logging
-
+from typing import List, Optional
 from fastapi import Request
+
+from starlette.types import ASGIApp
+
 from opencensus.trace import (
     attributes_helper,
     execution_context,
-    print_exporter,
-    samplers,
 )
-from opencensus.trace import span as span_module
-from opencensus.trace import tracer as tracer_module
-from opencensus.trace import utils
+from opencensus.trace.span import SpanKind
+from opencensus.trace.utils import disable_tracing_url
 from opencensus.trace.propagation import trace_context_http_header_format
-from starlette.types import ASGIApp
+
+from app.logging import get_logger, get_tracer
 
 HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES["HTTP_HOST"]
 HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES["HTTP_METHOD"]
@@ -20,54 +20,35 @@ HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES["HTTP_ROUTE"]
 HTTP_URL = attributes_helper.COMMON_ATTRIBUTES["HTTP_URL"]
 HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES["HTTP_STATUS_CODE"]
 
-module_logger = logging.getLogger(__name__)
 
+class RequestTracingMiddleware:
 
-class TracerMiddleware:
     def __init__(
         self,
         app: ASGIApp,
-        excludelist_paths=None,
-        excludelist_hostnames=None,
-        sampler=None,
-        log_handler=None,
-        trace_exporter=None,
-        propagator=None,
+        excludelist_paths: Optional[List[str]] = None,
+        excludelist_hostnames: Optional[List[str]] = None,
     ) -> None:
         self.app = app
         self.excludelist_paths = excludelist_paths
         self.excludelist_hostnames = excludelist_hostnames
-        self.sampler = sampler or samplers.AlwaysOnSampler()
-        self.trace_exporter = trace_exporter or print_exporter.PrintExporter()
-        self.propagator = (
-            propagator or trace_context_http_header_format.TraceContextPropagator()
-        )
-
-        if (log_handler):
-            module_logger.addHandler(log_handler)
+        self.propagator = trace_context_http_header_format.TraceContextPropagator()
 
     async def __call__(self, request: Request, call_next):
 
         # Do not trace if the url is in the exclude list
-        if utils.disable_tracing_url(str(request.url), self.excludelist_paths):
+        if disable_tracing_url(str(request.url), self.excludelist_paths):
             return await call_next(request)
 
-        try:
-            span_context = self.propagator.from_headers(request.headers)
+        logger = get_logger(__name__)
 
-            tracer = tracer_module.Tracer(
-                span_context=span_context,
-                sampler=self.sampler,
-                exporter=self.trace_exporter,
-                propagator=self.propagator,
-            )
-        except Exception:  # pragma: NO COVER
-            module_logger.error("Failed to trace request", exc_info=True)
-            return await call_next(request)
+        span_context = self.propagator.from_headers(request.headers)
+        tracer = get_tracer(span_context=span_context)
 
         try:
+
             span = tracer.start_span()
-            span.span_kind = span_module.SpanKind.SERVER
+            span.span_kind = SpanKind.SERVER
             span.name = "[{}]{}".format(request.method, request.url)
             tracer.add_attribute_to_current_span(
                 HTTP_HOST, request.url.hostname)
@@ -78,14 +59,14 @@ class TracerMiddleware:
                 "excludelist_hostnames", self.excludelist_hostnames
             )
         except Exception:  # pragma: NO COVER
-            module_logger.error("Failed to trace request", exc_info=True)
+            logger.error("Failed to trace request", exc_info=True)
 
         response = await call_next(request)
         try:
             tracer.add_attribute_to_current_span(
                 HTTP_STATUS_CODE, response.status_code)
         except Exception:  # pragma: NO COVER
-            module_logger.error("Failed to trace response", exc_info=True)
+            logger.error("Failed to trace response", exc_info=True)
         finally:
             tracer.end_span()
             return response

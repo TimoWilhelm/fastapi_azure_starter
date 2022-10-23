@@ -5,17 +5,12 @@ from fastapi import FastAPI, Security, Request, Response
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from opencensus.trace import samplers
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-from opencensus.ext.azure.trace_exporter import AzureExporter
-
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app import settings, azure_scheme, limiter
-from app.middleware import TracerMiddleware
+from app.middleware import RequestTracingMiddleware
 from app.routers import users
-
 
 app = FastAPI(
     swagger_ui_oauth2_redirect_url='/oauth2-redirect',
@@ -27,17 +22,10 @@ app = FastAPI(
 
 app.add_middleware(ProxyHeadersMiddleware)
 
-azure_log_handler = AzureLogHandler(
-    connection_string=settings.APPLICATIONINSIGHTS_CONNECTION_STRING)
-azure_trace_exporter = AzureExporter(
-    connection_string=settings.APPLICATIONINSIGHTS_CONNECTION_STRING)
-
-app.middleware("http")(TracerMiddleware(
+app.middleware("http")(RequestTracingMiddleware(
     app,
-    excludelist_paths=['/docs', '/redoc', '/oauth2-redirect'],
-    sampler=samplers.AlwaysOnSampler(),
-    log_handler=azure_log_handler,
-    trace_exporter=azure_trace_exporter))
+    excludelist_paths=['docs', 'redoc', 'openapi.json', 'oauth2-redirect'],
+))
 
 
 app.state.limiter = limiter
