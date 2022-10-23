@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import Request
 
-from fastapi_azure_auth.user import User
+from app.security import User
 
 from slowapi import Limiter
 

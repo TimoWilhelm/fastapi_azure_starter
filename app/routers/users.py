@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter, Request, Response, status
 
-from fastapi_azure_auth.user import User
+from app.security import User
 
 from app import limiter
 from app.logging import get_logger, get_tracer

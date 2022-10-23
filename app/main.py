@@ -80,10 +80,7 @@ app.include_router(users.router,
 
 @app.on_event('startup')
 async def load_config() -> None:
-    """
-    Load OpenID config on startup.
-    """
-    await azure_scheme.openid_config.load_config()
+    await azure_scheme.init()
 
 
 @app.get("/", include_in_schema=False)

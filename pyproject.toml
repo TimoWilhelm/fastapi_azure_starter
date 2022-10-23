@@ -10,12 +10,12 @@ packages = [{include = "fastapi_starter"}]
 python = "^3.10"
 pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 fastapi = "^0.85.1"
-fastapi-azure-auth = "^3.5.0"
 opencensus = "^0.11.0"
 opencensus-ext-azure = "^1.1.7"
 slowapi = "^0.1.6"
 opencensus-ext-logging = "^0.1.1"
 opencensus-ext-requests = "^0.8.0"
+httpx = "^0.23.0"
 
 
 [tool.poetry.group.dev.dependencies]
