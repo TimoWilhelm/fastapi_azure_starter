@@ -23,6 +23,4 @@ limiter = Limiter(
     default_limits=["100/minute"],
     headers_enabled=True,
     storage_uri="memory://",
-
-
 )
