@@ -4,13 +4,14 @@ from pydantic import AnyHttpUrl, BaseSettings, Field
 
 
 class Settings(BaseSettings):
-    LOG_LEVEL: str = Field(default="INFO", env="LOG_LEVEL")
-    SECRET_KEY: str = Field(default='', env='SECRET_KEY')
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = [
         'http://localhost:8000']
-    OPENAPI_CLIENT_ID: str = Field(default='', env='OPENAPI_CLIENT_ID')
-    APP_CLIENT_ID: str = Field(default='', env='APP_CLIENT_ID')
-    TENANT_ID: str = Field(default='', env='TENANT_ID')
+
+    TENANT_ID: str = Field(..., env='TENANT_ID')
+    OPENAPI_CLIENT_ID: str = Field(..., env='OPENAPI_CLIENT_ID')
+    APP_CLIENT_ID: str = Field(..., env='APP_CLIENT_ID')
+
+    LOG_LEVEL: str = Field(default="INFO", env="LOG_LEVEL")
     APPLICATIONINSIGHTS_CONNECTION_STRING: str = Field(
         default='InstrumentationKey=00000000-0000-0000-0000-000000000000',
         env='APPLICATIONINSIGHTS_CONNECTION_STRING')
@@ -21,4 +22,4 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
-settings = Settings()
+settings = Settings.parse_obj({})

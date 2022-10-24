@@ -8,7 +8,7 @@ from fastapi.openapi.models import SecurityBase as SecurityBaseModel
 from starlette.requests import Request
 
 from jwt import decode as jwt_decode
-from jwt.exceptions import PyJWKClientError, DecodeError
+from jwt.exceptions import PyJWKClientError, InvalidTokenError
 
 from .exceptions import InvalidAuth
 from .openid_config import OpenIdConfig
@@ -85,7 +85,7 @@ class AzureAuthorizationCodeBearerBase(SecurityBase):
                 audience=self.client_id,
                 issuer=self.openid_config.issuer,
             )
-        except DecodeError as e:
+        except InvalidTokenError as e:
             raise InvalidAuth(e.__str__())
 
         return payload
