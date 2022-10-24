@@ -1,8 +1,7 @@
-from .auth import SingleTenantAzureAuthorizationCodeBearer, MultiTenantAzureAuthorizationCodeBearer
+from .auth import OAuth2AuthorizationCodeBearer
 from .user import User
 
 __all__ = [
-    "SingleTenantAzureAuthorizationCodeBearer",
-    "MultiTenantAzureAuthorizationCodeBearer",
+    "OAuth2AuthorizationCodeBearer",
     "User"
 ]
