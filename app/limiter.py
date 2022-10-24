@@ -2,9 +2,9 @@ from typing import Optional
 
 from fastapi import Request
 
-from app.security import User
-
 from slowapi import Limiter
+
+from app.security import User
 
 
 def key_func(request: Request) -> str:

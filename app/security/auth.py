@@ -8,7 +8,7 @@ from fastapi.openapi.models import SecurityBase as SecurityBaseModel
 from starlette.requests import Request
 
 from jwt import decode as jwt_decode
-from jwt.exceptions import PyJWKClientError, InvalidTokenError
+from jwt.exceptions import PyJWTError, InvalidTokenError
 
 from .exceptions import InvalidAuth
 from .openid_config import OpenIdConfig
@@ -26,7 +26,7 @@ class AzureAuthorizationCodeBearerBase(SecurityBase):
         tenant_id: Optional[str] = None,
         scopes: Optional[Dict[str, str]] = None,
         multi_tenant: bool = False,
-        algorithms: List[str] = ["RS256"],
+        algorithms: Optional[List[str]] = None,
         auto_error: bool = True,
         openapi_description: Optional[str] = None,
     ) -> None:
@@ -73,20 +73,20 @@ class AzureAuthorizationCodeBearerBase(SecurityBase):
             jwk = self.signing_key = self.openid_config.jwks_client.get_signing_key_from_jwt(
                 token
             )
-        except PyJWKClientError as e:
-            raise InvalidAuth(e.__str__())
 
-        try:
             payload = jwt_decode(
                 jwt=token,
                 key=jwk.key,
-                verify=True,
                 algorithms=self.algorithms,
                 audience=self.client_id,
                 issuer=self.openid_config.issuer,
             )
         except InvalidTokenError as e:
-            raise InvalidAuth(e.__str__())
+            logger.warning('Invalid token', exc_info=True)
+            raise InvalidAuth('Invalid token') from e
+        except PyJWTError as e:
+            logger.error('Token validation failed', exc_info=True)
+            raise InvalidAuth('Token validation failed') from e
 
         return payload
 

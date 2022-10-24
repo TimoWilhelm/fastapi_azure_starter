@@ -2,7 +2,8 @@ import os
 import sys
 import re
 import logging
-from typing import List, Optional
+
+from typing import Dict, List, Optional
 
 from opencensus.trace import config_integration
 from opencensus.trace.samplers import AlwaysOnSampler
@@ -16,7 +17,7 @@ from opencensus.ext.azure.trace_exporter import AzureExporter
 
 from app import settings
 
-_global_loggers = {}
+_global_loggers: Dict[str, logging.Logger] = {}
 
 
 class CustomFormatter(logging.Formatter):
@@ -31,7 +32,7 @@ class CustomFormatter(logging.Formatter):
 
 
 def init_logging():
-    config_integration.trace_integrations(['logging', 'requests'])
+    config_integration.trace_integrations(['logging'])
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(CustomFormatter(

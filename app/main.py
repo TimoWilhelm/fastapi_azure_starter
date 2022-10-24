@@ -89,4 +89,4 @@ async def root(request: Request, response: Response):
 
 
 if __name__ == '__main__':
-    run('main:app', reload=True)
+    run('main:app', reload=True, port=8080)

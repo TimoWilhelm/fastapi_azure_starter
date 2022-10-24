@@ -27,6 +27,6 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 COPY gunicorn.conf.py /
 COPY ./app /app
 
-EXPOSE 80
+EXPOSE 8080
 
-CMD ["gunicorn", "app.main:app", "--config=./gunicorn.conf.py", "--worker-class=uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:80"]
+CMD ["gunicorn", "app.main:app", "--config=./gunicorn.conf.py", "--worker-class=uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:8080"]
