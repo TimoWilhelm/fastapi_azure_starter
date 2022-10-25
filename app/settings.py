@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     TENANT_ID: str = Field(..., env="TENANT_ID")
     OPENAPI_CLIENT_ID: str = Field(..., env="OPENAPI_CLIENT_ID")
-    APP_CLIENT_ID: str = Field(..., env="APP_CLIENT_ID")
+    API_CLIENT_ID: str = Field(..., env="API_CLIENT_ID")
 
     REDIS_CONNECTION_STRING: Optional[str] = Field(env="REDIS_CONNECTION_STRING")
 

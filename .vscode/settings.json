@@ -1,4 +1,7 @@
 {
+    "[python]": {
+        "editor.formatOnPaste": false // black does not support formatting sections of code.
+    },
     "python.analysis.typeCheckingMode": "basic",
     "python.formatting.provider": "black",
     "python.linting.enabled": true,

@@ -1,4 +1,3 @@
-import sys
 import logging
 
 from uvicorn import run
@@ -18,27 +17,15 @@ from app.responses import default_responses
 
 logger = logging.getLogger(__name__)
 
-
-def log_uncaught_exception(exc_type, exc_value, exc_traceback):
-    if not issubclass(exc_type, KeyboardInterrupt):
-        logger.critical(
-            "Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback)
-        )
-
-    sys.__excepthook__(exc_type, exc_value, exc_traceback)
-
-
-sys.excepthook = log_uncaught_exception
-
 app = FastAPI(
+    title="Hello World",
+    version="0.1.0",
+    description="Hello World API",
     swagger_ui_oauth2_redirect_url="/oauth2-redirect",
     swagger_ui_init_oauth={
         "usePkceWithAuthorizationCodeGrant": True,
         "clientId": settings.OPENAPI_CLIENT_ID,
     },
-    title="Hello World",
-    version="0.1.0",
-    description="Hello World API",
 )
 
 app.add_middleware(ProxyHeadersMiddleware)
