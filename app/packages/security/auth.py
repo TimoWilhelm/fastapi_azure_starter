@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from fastapi.exceptions import HTTPException
 from fastapi.security import (
     OAuth2AuthorizationCodeBearer as FastApiOAuth2AuthorizationCodeBearer,
-    SecurityScopes
+    SecurityScopes,
 )
 from fastapi.security.base import SecurityBase
 from fastapi.openapi.models import SecurityBase as SecurityBaseModel
@@ -28,7 +28,7 @@ class OAuth2AuthorizationCodeBearer(SecurityBase):
         config_url: str,
         client_id: str,
         scopes: Optional[Dict[str, str]] = None,
-        algorithms: List[str] = ['RS256', 'RS384', 'RS512'],
+        algorithms: List[str] = ["RS256", "RS384", "RS512"],
         auto_error: bool = True,
         openapi_description: Optional[str] = None,
     ) -> None:
@@ -58,19 +58,17 @@ class OAuth2AuthorizationCodeBearer(SecurityBase):
         self.auto_error = auto_error
         self.openapi_description = openapi_description
 
-        self.openid_config: OpenIdConfig = OpenIdConfig(
-            config_url=config_url
-        )
+        self.openid_config: OpenIdConfig = OpenIdConfig(config_url=config_url)
 
         self.oauth: FastApiOAuth2AuthorizationCodeBearer
         self.model: SecurityBaseModel
-        self.scheme_name: str = 'OAuth2 Authorization Code Flow with PKCE'
+        self.scheme_name: str = "OAuth2 Authorization Code Flow with PKCE"
 
     def _verify(self, token: str):
         try:
-            jwk = self.signing_key = self.openid_config.jwks_client.get_signing_key_from_jwt(
-                token
-            )
+            jwk = (
+                self.signing_key
+            ) = self.openid_config.jwks_client.get_signing_key_from_jwt(token)
 
             payload = jwt_decode(
                 jwt=token,
@@ -80,11 +78,11 @@ class OAuth2AuthorizationCodeBearer(SecurityBase):
                 issuer=self.openid_config.issuer,
             )
         except InvalidTokenError as e:
-            logger.warning('Invalid token', exc_info=True)
-            raise InvalidAuth('Invalid token') from e
+            logger.warning("Invalid token", exc_info=True)
+            raise InvalidAuth("Invalid token") from e
         except PyJWTError as e:
-            logger.error('Token validation failed', exc_info=True)
-            raise InvalidAuth('Token validation failed') from e
+            logger.error("Token validation failed", exc_info=True)
+            raise InvalidAuth("Token validation failed") from e
 
         return payload
 
@@ -101,7 +99,9 @@ class OAuth2AuthorizationCodeBearer(SecurityBase):
         )
         self.model = self.oauth.model
 
-    async def __call__(self, request: Request, security_scopes: SecurityScopes) -> Optional[User]:
+    async def __call__(
+        self, request: Request, security_scopes: SecurityScopes
+    ) -> Optional[User]:
         """
         Extends call validate the token.
         """
@@ -112,21 +112,23 @@ class OAuth2AuthorizationCodeBearer(SecurityBase):
         try:
             access_token = await self.oauth(request=request)
 
-            if (access_token is None):
-                raise InvalidAuth('No access token provided')
+            if access_token is None:
+                raise InvalidAuth("No access token provided")
 
             claims = self._verify(access_token)
 
-            token_scope_string = claims.get('scp', '')
+            token_scope_string = claims.get("scp", "")
             if not isinstance(token_scope_string, str):
-                raise InvalidAuth('Token contains invalid formatted scopes')
-            token_scopes = token_scope_string.split(' ')
+                raise InvalidAuth("Token contains invalid formatted scopes")
+            token_scopes = token_scope_string.split(" ")
             for scope in security_scopes.scopes:
                 if scope not in token_scopes:
-                    raise InvalidAuth('Required scope missing')
+                    raise InvalidAuth("Required scope missing")
 
             # Attach the user to the request. Can be accessed through `request.state.user`
-            user: User = User(**{**claims, 'claims': claims, 'access_token': access_token})
+            user: User = User(
+                **{**claims, "claims": claims, "access_token": access_token}
+            )
             request.state.user = user
             return user
 

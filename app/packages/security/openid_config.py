@@ -31,33 +31,38 @@ class OpenIdConfig:
         refresh_time = datetime.now() - timedelta(hours=24)
         if not self._config_timestamp or self._config_timestamp < refresh_time:
             try:
-                logger.info('Loading OpenID configuration.')
+                logger.info("Loading OpenID configuration.")
                 await self._load_openid_config()
                 self._config_timestamp = datetime.now()
             except Exception as error:
-                logger.error('Unable to load OpenID configuration', exc_info=True)
-                raise RuntimeError('Unable to load OpenID configuration.') from error
+                logger.error("Unable to load OpenID configuration", exc_info=True)
+                raise RuntimeError("Unable to load OpenID configuration.") from error
 
-            logger.info((
-                "Successfully loaded OpenID configuration:\n"
-                "authorization endpoint: %s\n"
-                "token endpoint: %s\n"
-                "issuer: %s"
-            ), self.authorization_endpoint, self.token_endpoint, self.issuer)
+            logger.info(
+                (
+                    "Successfully loaded OpenID configuration:\n"
+                    "authorization endpoint: %s\n"
+                    "token endpoint: %s\n"
+                    "issuer: %s"
+                ),
+                self.authorization_endpoint,
+                self.token_endpoint,
+                self.issuer,
+            )
 
     async def _load_openid_config(self) -> None:
         """
         Load openid config, fetch signing keys
         """
         async with AsyncClient(timeout=10) as client:
-            logger.info('Fetching OpenID Connect config from %s', self.config_url)
+            logger.info("Fetching OpenID Connect config from %s", self.config_url)
             openid_response = await client.get(self.config_url)
             openid_response.raise_for_status()
             openid_cfg = openid_response.json()
 
-            self.authorization_endpoint = openid_cfg['authorization_endpoint']
-            self.token_endpoint = openid_cfg['token_endpoint']
-            self.issuer = openid_cfg['issuer']
+            self.authorization_endpoint = openid_cfg["authorization_endpoint"]
+            self.token_endpoint = openid_cfg["token_endpoint"]
+            self.issuer = openid_cfg["issuer"]
 
-            jwks_uri = openid_cfg['jwks_uri']
+            jwks_uri = openid_cfg["jwks_uri"]
             self.jwks_client = PyJWKClient(jwks_uri)

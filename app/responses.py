@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel
 
 from fastapi import status
@@ -22,7 +21,7 @@ unauthorized_response = {
 too_many_requests_response = {
     status.HTTP_429_TOO_MANY_REQUESTS: {
         "description": "Too many requests",
-        "model": Error
+        "model": Error,
     },
 }
 

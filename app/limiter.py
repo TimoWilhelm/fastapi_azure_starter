@@ -5,15 +5,15 @@ from fastapi import Request
 from slowapi import Limiter
 
 from app import settings
-from app.security import User
+from app.packages.security import User
 
 
 def key_func(request: Request) -> str:
     user: Optional[User] = request.state.user
     if user is not None:
-        return str(user.claims.get('oid') or user.claims.get('sub'))
+        return str(user.claims.get("oid") or user.claims.get("sub"))
 
-    if (request.client is not None):
+    if request.client is not None:
         return request.client.host
 
     return "default"

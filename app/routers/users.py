@@ -1,13 +1,15 @@
+import logging
+
 from pydantic import BaseModel
 
 from fastapi import APIRouter, Request, Response, status
 
-from app.security import User
+from app.packages.security import User
 
 from app import limiter
-from app.logging import get_logger, get_tracer
+from app.util.tracing import get_tracer
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -24,14 +26,10 @@ class Greeting(BaseModel):
     responses={
         status.HTTP_200_OK: {
             "content": {
-                "application/json": {
-                    "example": {
-                        "greeting": "Hello John Doe!"
-                    }
-                }
+                "application/json": {"example": {"greeting": "Hello John Doe!"}}
             },
         },
-    }
+    },
 )
 @limiter.limit("5/minute")
 async def get_user_me(request: Request, response: Response):
