@@ -4,6 +4,7 @@ from fastapi import Request
 
 from slowapi import Limiter
 
+from app import settings
 from app.security import User
 
 
@@ -22,5 +23,5 @@ limiter = Limiter(
     key_func=key_func,
     default_limits=["100/minute"],
     headers_enabled=True,
-    storage_uri="memory://",
+    storage_uri=settings.REDIS_CONNECTION_STRING or "memory://",
 )

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 from pydantic import AnyHttpUrl, BaseSettings, Field
 
@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     TENANT_ID: str = Field(..., env='TENANT_ID')
     OPENAPI_CLIENT_ID: str = Field(..., env='OPENAPI_CLIENT_ID')
     APP_CLIENT_ID: str = Field(..., env='APP_CLIENT_ID')
+
+    REDIS_CONNECTION_STRING: Optional[str] = Field(env='REDIS_CONNECTION_STRING')
 
     LOG_LEVEL: str = Field(default="INFO", env="LOG_LEVEL")
     APPLICATIONINSIGHTS_CONNECTION_STRING: str = Field(
