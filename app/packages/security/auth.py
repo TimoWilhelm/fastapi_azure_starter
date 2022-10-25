@@ -22,7 +22,7 @@ from .user import User
 logger = logging.getLogger(__name__)
 
 
-class OAuth2AuthorizationCodeBearer(SecurityBase):
+class OidcAuthorizationCodeBearer(SecurityBase):
     def __init__(
         self,
         config_url: str,
@@ -62,7 +62,7 @@ class OAuth2AuthorizationCodeBearer(SecurityBase):
 
         self.oauth: FastApiOAuth2AuthorizationCodeBearer
         self.model: SecurityBaseModel
-        self.scheme_name: str = "OAuth2 Authorization Code Flow with PKCE"
+        self.scheme_name: str = "OpenID Connect"
 
     def _verify(self, token: str):
         try:
@@ -93,7 +93,6 @@ class OAuth2AuthorizationCodeBearer(SecurityBase):
             authorizationUrl=self.openid_config.authorization_endpoint,
             tokenUrl=self.openid_config.token_endpoint,
             scopes=self.scopes,
-            scheme_name=self.scheme_name,
             description=self.openapi_description,
             auto_error=True,  # We catch this exception in __call__
         )

@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "fastapi_starter"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 fastapi = "^0.85.1"
 opencensus = "^0.11.0"

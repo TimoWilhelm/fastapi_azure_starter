@@ -11,8 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from pydantic import BaseModel
-
 from app import settings, azure_scheme, limiter
 from app.middleware import RequestTracingMiddleware
 from app.routers import users
@@ -52,7 +50,6 @@ app.middleware("http")(
     )
 )
 
-
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -64,15 +61,6 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-
-class Detail(BaseModel):
-    detail: str
-
-
-class Error(BaseModel):
-    error: str
-
 
 app.include_router(
     users.router,
@@ -94,4 +82,4 @@ async def root(request: Request, response: Response):
 
 
 if __name__ == "__main__":
-    run("main:app", reload=True, port=8080)
+    run("main:app", reload=True, port=8000)

@@ -1,4 +1,4 @@
-from .auth import OAuth2AuthorizationCodeBearer
+from .auth import OidcAuthorizationCodeBearer
 from .user import User
 
-__all__ = ["OAuth2AuthorizationCodeBearer", "User"]
+__all__ = ["OidcAuthorizationCodeBearer", "User"]
