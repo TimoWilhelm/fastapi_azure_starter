@@ -35,29 +35,33 @@ class OidcAuthorizationCodeBearer(SecurityBase):
         name: str = "OpenID Connect",
         openapi_description: Optional[str] = None,
     ) -> None:
-        """
-        Initialize settings.
-        :param config_url: str
-            The OpenID Connect Discovery URL
-        :param client_id: str
-            Your application client ID.
-        :param scopes: Optional[dict[str, str]
-            The OAuth Scopes your application requires.
-            Key is the scope, value is a description.
-            Example:
-                {
-                    f'api://example.com/user_impersonation': 'user impersonation'
-                }
-        :param algorithms: List[str]
-            The supported signing key algorithms for the token.
-        :param auto_error: bool
-            Whether to throw exceptions or return None on __call__.
-        :param config_timeout_in_h: int
-            The number of hours to cache the OpenID Connect Discovery document.
-        :param name: Optional[str]
-            The name of the auth scheme.
-        :param openapi_description: Optional[str]
-            Override OpenAPI description
+        """Returns a security scheme that uses OpenID Connect to authenticate users.
+
+        Args:
+            config_url (str):
+                The OpenID Connect Discovery URL.
+            client_id (str):
+                The API client ID.
+            scopes (Optional[Dict[str, str]], optional):
+                The OAuth Scopes your application uses.
+                Defaults to None.
+
+                The Key is the scope, value is a description.
+                Example:
+                    {
+                        f'api://example.com/user_impersonation': 'user impersonation'
+                    }
+            algorithms (List[str], optional):
+                The supported signing key algorithms for the token.
+                Defaults to ["RS256", "RS384", "RS512"].
+            auto_error (bool, optional):
+                Whether to throw exceptions or return None on __call__. Defaults to True.
+            config_timeout_in_h (int, optional):
+                The number of hours to cache the OpenID Connect Discovery document. Defaults to 24.
+            name (str, optional):
+                The OpenAPI name of the auth scheme. Defaults to "OpenID Connect".
+            openapi_description (Optional[str], optional):
+                The OpenAPI description of the auth scheme. Defaults to None.
         """
         self.client_id = client_id
         self.scopes = scopes

@@ -2,9 +2,10 @@ import logging
 
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Request, Response, status
+from fastapi import Depends, APIRouter, Request, Response, status
 
 from app.packages.security import User
+from app.packages.security.dependencies import RoleValidator
 
 from app import limiter
 from app.util.tracing import get_tracer
@@ -32,8 +33,19 @@ class Greeting(BaseModel):
     },
 )
 @limiter.limit("5/minute")
-async def get_user_me(request: Request, response: Response):
+async def get_greeting(request: Request, response: Response):
     with get_tracer().span(name="get_user_me"):
         user: User = request.state.user
         logger.info(f"User {user.claims.get('oid')} is requesting /me")
         return Greeting(greeting=f"Hello {user.claims.get('name')}!")
+
+
+@router.get(
+    "/admin",
+    dependencies=[Depends(RoleValidator(["admin"]))],
+    name="Admin Endpoint",
+    response_model=str,
+)
+async def get_admin(request: Request, response: Response):
+    with get_tracer().span(name="get_user_me"):
+        return "You are an admin!"
