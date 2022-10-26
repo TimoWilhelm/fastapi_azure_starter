@@ -14,6 +14,7 @@ from app import settings, azure_scheme, limiter
 from app.middleware import UncaughtExceptionHandlerMiddleware, RequestTracingMiddleware
 from app.routers import users
 from app.responses import default_responses
+from app.util.tracing import azure_trace_exporter
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +30,11 @@ app = FastAPI(
 )
 
 app.add_middleware(ProxyHeadersMiddleware)
-
-app.middleware("http")(UncaughtExceptionHandlerMiddleware(app))
-app.middleware("http")(
-    RequestTracingMiddleware(
-        app,
-        excludelist_paths=["docs", "redoc", "openapi.json", "oauth2-redirect"],
-    )
+app.add_middleware(UncaughtExceptionHandlerMiddleware)
+app.add_middleware(
+    RequestTracingMiddleware,
+    excludelist_paths=["docs", "redoc", "openapi.json", "oauth2-redirect"],
+    exporter=azure_trace_exporter,
 )
 
 app.state.limiter = limiter

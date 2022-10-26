@@ -34,9 +34,9 @@ class Greeting(BaseModel):
 )
 @limiter.limit("5/minute")
 async def get_greeting(request: Request, response: Response):
-    with get_tracer().span(name="get_user_me"):
+    with get_tracer().span(name="get_greeting"):
         user: User = request.state.user
-        logger.info(f"User {user.claims.get('oid')} is requesting /me")
+        logger.info(f"User {user.claims.get('oid')} is requesting a greeting.")
         return Greeting(greeting=f"Hello {user.claims.get('name')}!")
 
 

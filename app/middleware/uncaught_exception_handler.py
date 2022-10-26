@@ -1,21 +1,23 @@
 import logging
 
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.requests import Request
+from starlette.responses import Response, PlainTextResponse
 from starlette.types import ASGIApp
-
-from fastapi import Request
-from fastapi.responses import PlainTextResponse
 
 logger = logging.getLogger(__name__)
 
 
-class UncaughtExceptionHandlerMiddleware:
+class UncaughtExceptionHandlerMiddleware(BaseHTTPMiddleware):
     def __init__(
         self,
         app: ASGIApp,
     ) -> None:
-        self.app = app
+        super().__init__(app)
 
-    async def __call__(self, request: Request, call_next):
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         try:
             return await call_next(request)
         except Exception:  # pragma: NO COVER

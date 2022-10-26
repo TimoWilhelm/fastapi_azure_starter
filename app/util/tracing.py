@@ -10,6 +10,10 @@ from opencensus.ext.azure.trace_exporter import AzureExporter
 
 from app import settings
 
+azure_trace_exporter = AzureExporter(
+    connection_string=settings.APPLICATIONINSIGHTS_CONNECTION_STRING
+)
+
 
 def get_tracer(
     span_context: Optional[SpanContext] = None, sampler: Optional[Sampler] = None
@@ -17,8 +21,6 @@ def get_tracer(
     return Tracer(
         span_context=span_context,
         sampler=sampler or AlwaysOnSampler(),
-        exporter=AzureExporter(
-            connection_string=settings.APPLICATIONINSIGHTS_CONNECTION_STRING
-        ),
+        exporter=azure_trace_exporter,
         propagator=trace_context_http_header_format.TraceContextPropagator(),
     )

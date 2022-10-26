@@ -16,9 +16,11 @@ class RoleValidator:
             raise InvalidAuthException("No user attached to request")
 
         user_roles = user.claims.get("roles", [])
+
         if not isinstance(user_roles, list):
             raise InvalidAuthException("Invalid formatted roles claim")
 
         if not any(role in user_roles for role in self.roles):
             raise InvalidAuthException("Insufficient permissions")
+
         return user_roles
