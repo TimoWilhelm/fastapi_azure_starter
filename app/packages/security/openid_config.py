@@ -14,8 +14,10 @@ class OpenIdConfig:
     def __init__(
         self,
         config_url: str,
+        timeout_in_h: int,
     ) -> None:
         self.config_url = config_url
+        self.timeout_in_h = timeout_in_h
 
         self._config_timestamp: Optional[datetime] = None
 
@@ -28,7 +30,7 @@ class OpenIdConfig:
         """
         Loads config from the openid-config endpoint if it's not cached or it's over 24 hours old
         """
-        refresh_time = datetime.now() - timedelta(hours=24)
+        refresh_time = datetime.now() - timedelta(hours=self.timeout_in_h)
         if not self._config_timestamp or self._config_timestamp < refresh_time:
             try:
                 logger.info("Loading OpenID configuration.")

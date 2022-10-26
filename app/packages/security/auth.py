@@ -8,14 +8,13 @@ from fastapi.security import (
     SecurityScopes,
 )
 from fastapi.security.base import SecurityBase
-from fastapi.openapi.models import SecurityBase as SecurityBaseModel
 
 from starlette.requests import Request
 
 from jwt import decode as jwt_decode
 from jwt.exceptions import PyJWTError, InvalidTokenError
 
-from .exceptions import InvalidAuth
+from .exceptions import InvalidAuthException, NotInitializedException
 from .openid_config import OpenIdConfig
 from .user import User
 
@@ -23,6 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 class OidcAuthorizationCodeBearer(SecurityBase):
+    _oauth: FastApiOAuth2AuthorizationCodeBearer | None = None
+
     def __init__(
         self,
         config_url: str,
@@ -30,6 +31,8 @@ class OidcAuthorizationCodeBearer(SecurityBase):
         scopes: Optional[Dict[str, str]] = None,
         algorithms: List[str] = ["RS256", "RS384", "RS512"],
         auto_error: bool = True,
+        config_timeout_in_h: int = 24,
+        name: str = "OpenID Connect",
         openapi_description: Optional[str] = None,
     ) -> None:
         """
@@ -49,6 +52,10 @@ class OidcAuthorizationCodeBearer(SecurityBase):
             The supported signing key algorithms for the token.
         :param auto_error: bool
             Whether to throw exceptions or return None on __call__.
+        :param config_timeout_in_h: int
+            The number of hours to cache the OpenID Connect Discovery document.
+        :param name: Optional[str]
+            The name of the auth scheme.
         :param openapi_description: Optional[str]
             Override OpenAPI description
         """
@@ -56,13 +63,22 @@ class OidcAuthorizationCodeBearer(SecurityBase):
         self.scopes = scopes
         self.algorithms = algorithms
         self.auto_error = auto_error
+        self.scheme_name = name
         self.openapi_description = openapi_description
 
-        self.openid_config: OpenIdConfig = OpenIdConfig(config_url=config_url)
+        self.openid_config: OpenIdConfig = OpenIdConfig(
+            config_url=config_url, timeout_in_h=config_timeout_in_h
+        )
 
-        self.oauth: FastApiOAuth2AuthorizationCodeBearer
-        self.model: SecurityBaseModel
-        self.scheme_name: str = "OpenID Connect"
+    @property
+    def oauth(self):
+        if not self._oauth:
+            raise NotInitializedException()
+        return self._oauth
+
+    @property
+    def model(self):
+        return self.oauth.model
 
     def _verify(self, token: str):
         try:
@@ -79,50 +95,45 @@ class OidcAuthorizationCodeBearer(SecurityBase):
             )
         except InvalidTokenError as e:
             logger.warning("Invalid token", exc_info=True)
-            raise InvalidAuth("Invalid token") from e
+            raise InvalidAuthException("Invalid token") from e
         except PyJWTError as e:
             logger.error("Token validation failed", exc_info=True)
-            raise InvalidAuth("Token validation failed") from e
+            raise InvalidAuthException("Token validation failed") from e
 
         return payload
 
     async def init(self):
         await self.openid_config.load_config()
 
-        self.oauth = FastApiOAuth2AuthorizationCodeBearer(
+        self._oauth = FastApiOAuth2AuthorizationCodeBearer(
             authorizationUrl=self.openid_config.authorization_endpoint,
             tokenUrl=self.openid_config.token_endpoint,
             scopes=self.scopes,
             description=self.openapi_description,
             auto_error=True,  # We catch this exception in __call__
         )
-        self.model = self.oauth.model
 
     async def __call__(
         self, request: Request, security_scopes: SecurityScopes
     ) -> Optional[User]:
-        """
-        Extends call validate the token.
-        """
-
-        # refresh config
+        # refresh config if needed
         await self.openid_config.load_config()
 
         try:
             access_token = await self.oauth(request=request)
 
             if access_token is None:
-                raise InvalidAuth("No access token provided")
+                raise InvalidAuthException("No access token provided")
 
             claims = self._verify(access_token)
 
             token_scope_string = claims.get("scp", "")
             if not isinstance(token_scope_string, str):
-                raise InvalidAuth("Token contains invalid formatted scopes")
+                raise InvalidAuthException("Token contains invalid formatted scopes")
             token_scopes = token_scope_string.split(" ")
             for scope in security_scopes.scopes:
                 if scope not in token_scopes:
-                    raise InvalidAuth("Required scope missing")
+                    raise InvalidAuthException("Required scope missing")
 
             # Attach the user to the request. Can be accessed through `request.state.user`
             user: User = User(
@@ -131,7 +142,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
             request.state.user = user
             return user
 
-        except (HTTPException, InvalidAuth):
+        except (HTTPException, InvalidAuthException):
             if not self.auto_error:
                 return None
             raise

@@ -24,15 +24,6 @@ class CustomFormatter(logging.Formatter):
         return super().format(record)
 
 
-def log_uncaught_exception(exc_type, exc_value, exc_traceback):
-    if not issubclass(exc_type, KeyboardInterrupt):
-        logger.critical(
-            "Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback)
-        )
-
-    sys.__excepthook__(exc_type, exc_value, exc_traceback)
-
-
 def init_logging():
     config_integration.trace_integrations(["logging"])
 
@@ -53,5 +44,3 @@ def init_logging():
         level=settings.LOG_LEVEL,
         handlers=handlers,
     )
-
-    sys.excepthook = log_uncaught_exception

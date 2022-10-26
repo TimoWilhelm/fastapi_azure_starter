@@ -11,7 +11,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app import settings, azure_scheme, limiter
-from app.middleware import RequestTracingMiddleware
+from app.middleware import UncaughtExceptionHandlerMiddleware, RequestTracingMiddleware
 from app.routers import users
 from app.responses import default_responses
 
@@ -30,6 +30,7 @@ app = FastAPI(
 
 app.add_middleware(ProxyHeadersMiddleware)
 
+app.middleware("http")(UncaughtExceptionHandlerMiddleware(app))
 app.middleware("http")(
     RequestTracingMiddleware(
         app,
@@ -60,12 +61,21 @@ app.include_router(
 
 @app.on_event("startup")
 async def load_config() -> None:
-    await azure_scheme.init()
+    try:
+        await azure_scheme.init()
+    except Exception:  # pragma: NO COVER
+        logger.error("Error during application startup", exc_info=True)
+        raise
 
 
 @app.get("/", include_in_schema=False)
 async def root(request: Request, response: Response):
     return RedirectResponse("/docs")
+
+
+@app.get("/error")
+async def error(request: Request, response: Response):
+    raise Exception("This is an error")
 
 
 if __name__ == "__main__":

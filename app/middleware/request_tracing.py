@@ -2,9 +2,9 @@ import logging
 
 from typing import List, Optional
 
-from fastapi import Request
-
 from starlette.types import ASGIApp
+
+from fastapi import Request
 
 from opencensus.trace import (
     attributes_helper,
@@ -39,7 +39,6 @@ class RequestTracingMiddleware:
         self.propagator = trace_context_http_header_format.TraceContextPropagator()
 
     async def __call__(self, request: Request, call_next):
-
         # Do not trace if the url is in the exclude list
         if disable_tracing_url(str(request.url), self.excludelist_paths):
             return await call_next(request)
@@ -48,7 +47,6 @@ class RequestTracingMiddleware:
         tracer = get_tracer(span_context=span_context)
 
         try:
-
             span = tracer.start_span()
             span.span_kind = SpanKind.SERVER
             span.name = "[{}]{}".format(request.method, request.url)
@@ -59,14 +57,12 @@ class RequestTracingMiddleware:
             execution_context.set_opencensus_attr(
                 "excludelist_hostnames", self.excludelist_hostnames
             )
+
+            response = await call_next(request)
+
+            tracer.add_attribute_to_current_span(HTTP_STATUS_CODE, response.status_code)
+            return response
         except Exception:  # pragma: NO COVER
             logger.error("Failed to trace request", exc_info=True)
-
-        response = await call_next(request)
-        try:
-            tracer.add_attribute_to_current_span(HTTP_STATUS_CODE, response.status_code)
-        except Exception:  # pragma: NO COVER
-            logger.error("Failed to trace response", exc_info=True)
         finally:
             tracer.end_span()
-            return response
