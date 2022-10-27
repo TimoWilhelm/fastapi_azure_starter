@@ -1,13 +1,11 @@
 import logging
 
+from fastapi import APIRouter, Depends, Request, Response, status
 from pydantic import BaseModel
 
-from fastapi import Depends, APIRouter, Request, Response, status
-
+from app import limiter
 from app.packages.security import User
 from app.packages.security.dependencies import RoleValidator
-
-from app import limiter
 from app.util.tracing import get_tracer
 
 logger = logging.getLogger(__name__)

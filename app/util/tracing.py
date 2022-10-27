@@ -1,12 +1,10 @@
 from typing import Optional
 
-from opencensus.trace.samplers import AlwaysOnSampler
-from opencensus.trace.tracer import Tracer
-from opencensus.trace.propagation import trace_context_http_header_format
-from opencensus.trace.span_context import SpanContext
-from opencensus.trace.samplers import Sampler
-
 from opencensus.ext.azure.trace_exporter import AzureExporter
+from opencensus.trace.propagation import trace_context_http_header_format
+from opencensus.trace.samplers import AlwaysOnSampler, Sampler
+from opencensus.trace.span_context import SpanContext
+from opencensus.trace.tracer import Tracer
 
 from app import settings
 

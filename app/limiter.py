@@ -1,7 +1,6 @@
 from typing import Optional
 
 from fastapi import Request
-
 from slowapi import Limiter
 
 from app import settings

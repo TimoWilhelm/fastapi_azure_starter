@@ -2,7 +2,7 @@ import logging
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
-from starlette.responses import Response, PlainTextResponse
+from starlette.responses import PlainTextResponse, Response
 from starlette.types import ASGIApp
 
 logger = logging.getLogger(__name__)

@@ -1,12 +1,10 @@
-import sys
-import re
 import logging
-
+import re
+import sys
 from typing import List
 
-from opencensus.trace import config_integration
-
 from opencensus.ext.azure.log_exporter import AzureLogHandler
+from opencensus.trace import config_integration
 
 from app import settings
 

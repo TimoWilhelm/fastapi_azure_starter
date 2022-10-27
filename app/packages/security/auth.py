@@ -1,18 +1,15 @@
 import logging
-
 from typing import Dict, List, Optional
 
 from fastapi.exceptions import HTTPException
 from fastapi.security import (
     OAuth2AuthorizationCodeBearer as FastApiOAuth2AuthorizationCodeBearer,
-    SecurityScopes,
 )
+from fastapi.security import SecurityScopes
 from fastapi.security.base import SecurityBase
-
-from starlette.requests import Request
-
 from jwt import decode as jwt_decode
-from jwt.exceptions import PyJWTError, InvalidTokenError
+from jwt.exceptions import InvalidTokenError, PyJWTError
+from starlette.requests import Request
 
 from .exceptions import InvalidAuthException, NotInitializedException
 from .openid_config import OpenIdConfig
@@ -29,7 +26,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
         config_url: str,
         client_id: str,
         scopes: Optional[Dict[str, str]] = None,
-        algorithms: List[str] = ["RS256", "RS384", "RS512"],
+        algorithms: Optional[List[str]] = None,
         auto_error: bool = True,
         config_timeout_in_h: int = 24,
         name: str = "OpenID Connect",
@@ -65,7 +62,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
         """
         self.client_id = client_id
         self.scopes = scopes
-        self.algorithms = algorithms
+        self.algorithms = algorithms or ["RS256", "RS384", "RS512"]
         self.auto_error = auto_error
         self.scheme_name = name
         self.openapi_description = openapi_description

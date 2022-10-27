@@ -1,10 +1,8 @@
 import logging
 from datetime import datetime, timedelta
-
 from typing import Optional
 
 from httpx import AsyncClient
-
 from jwt.jwks_client import PyJWKClient
 
 logger = logging.getLogger(__name__)

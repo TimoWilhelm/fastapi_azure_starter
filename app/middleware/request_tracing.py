@@ -26,11 +26,11 @@ from opencensus.trace import (
     samplers,
 )
 from opencensus.trace import span as span_module
-from opencensus.trace.blank_span import BlankSpan
-from opencensus.trace.span import Span
 from opencensus.trace import tracer as tracer_module
 from opencensus.trace import utils
+from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
+from opencensus.trace.span import Span
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response

@@ -1,19 +1,17 @@
 import logging
 
+from fastapi import FastAPI, Request, Response, Security
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from uvicorn import run
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from fastapi import FastAPI, Security, Request, Response
-from fastapi.responses import RedirectResponse
-from fastapi.middleware.cors import CORSMiddleware
-
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-
-from app import settings, azure_scheme, limiter
-from app.middleware import UncaughtExceptionHandlerMiddleware, RequestTracingMiddleware
-from app.routers import users
+from app import azure_scheme, limiter, settings
+from app.middleware import RequestTracingMiddleware, UncaughtExceptionHandlerMiddleware
 from app.responses import default_responses
+from app.routers import users
 from app.util.tracing import azure_trace_exporter
 
 logger = logging.getLogger(__name__)
