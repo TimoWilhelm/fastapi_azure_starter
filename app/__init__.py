@@ -1,6 +1,8 @@
+# import settings first so it can be used by other modules
+from .settings import settings  # noqa isort:skip
+
 from .azure_scheme import azure_scheme
 from .limiter import limiter
-from .settings import settings
 
 __all__ = ["settings", "azure_scheme", "limiter"]
 

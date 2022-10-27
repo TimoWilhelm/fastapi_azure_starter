@@ -24,4 +24,4 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
-settings = Settings.parse_obj({})
+settings = Settings()  # pyright: ignore[reportGeneralTypeIssues]
