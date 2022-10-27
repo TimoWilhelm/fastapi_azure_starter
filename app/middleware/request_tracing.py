@@ -111,8 +111,6 @@ class RequestTracingMiddleware(BaseHTTPMiddleware):
         return tracer
 
     def _before_request(self, span: Union[Span, BlankSpan], request: Request):
-        span.span_kind = span_module.SpanKind.SERVER
-        span.name = "[{}]{}".format(request.method, request.url)
         span.add_attribute(HTTP_HOST, request.url.hostname)
         span.add_attribute(HTTP_METHOD, request.method)
         span.add_attribute(HTTP_PATH, request.url.path)
@@ -142,7 +140,8 @@ class RequestTracingMiddleware(BaseHTTPMiddleware):
 
         try:
             tracer = self._prepare_tracer(request)
-            span = tracer.start_span()
+            span = tracer.start_span(name=f"[{request.method}]{request.url}")
+            span.span_kind = span_module.SpanKind.SERVER
         except Exception:  # pragma: NO COVER
             module_logger.error("Failed to trace request", exc_info=True)
             return await call_next(request)

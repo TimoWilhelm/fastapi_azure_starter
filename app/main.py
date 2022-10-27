@@ -1,8 +1,12 @@
+import asyncio
 import logging
 
+import httpx
 from fastapi import FastAPI, Request, Response, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from opencensus.trace.samplers import AlwaysOnSampler
+from opencensus.trace.tracer import Tracer
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from uvicorn import run
@@ -12,9 +16,13 @@ from app import azure_scheme, limiter, settings
 from app.middleware import RequestTracingMiddleware, UncaughtExceptionHandlerMiddleware
 from app.responses import default_responses
 from app.routers import users
+from app.util.instrumentation import HTTPXClientInstrumentation
 from app.util.tracing import azure_trace_exporter
 
 logger = logging.getLogger(__name__)
+
+tracer = Tracer(exporter=azure_trace_exporter, sampler=AlwaysOnSampler())
+HTTPXClientInstrumentation().instrument_global(tracer=tracer)
 
 app = FastAPI(
     title="Hello World",
@@ -56,13 +64,23 @@ app.include_router(
 )
 
 
+async def make_sample_request():
+    async with httpx.AsyncClient() as client:
+        result = await client.get("https://example.com")
+        print(result.content)
+
+
 @app.on_event("startup")
 async def load_config() -> None:
-    try:
-        await azure_scheme.init()
-    except Exception:  # pragma: NO COVER
-        logger.error("Error during application startup", exc_info=True)
-        raise
+    with tracer.span(name="app:startup"):
+        try:
+            await asyncio.gather(
+                azure_scheme.init(),
+                make_sample_request(),
+            )
+        except Exception:  # pragma: NO COVER
+            logger.error("Error during application startup", exc_info=True)
+            raise
 
 
 @app.get("/", include_in_schema=False)
