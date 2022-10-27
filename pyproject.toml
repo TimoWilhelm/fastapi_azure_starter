@@ -4,11 +4,11 @@ version = "0.1.0"
 description = ""
 authors = ["Timo Wilhelm <mail@timowilhelm.com>"]
 readme = "README.md"
-packages = [{include = "fastapi_starter"}]
+packages = [{ include = "fastapi_starter" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pydantic = {extras = ["dotenv"], version = "^1.10.2"}
+pydantic = { extras = ["dotenv"], version = "^1.10.2" }
 fastapi = "^0.85.1"
 opencensus = "^0.11.0"
 opencensus-ext-azure = "^1.1.7"
@@ -19,7 +19,7 @@ redis = "^4.3.4"
 
 
 [tool.poetry.group.dev.dependencies]
-uvicorn = {extras = ["standard"], version = "^0.19.0"}
+uvicorn = { extras = ["standard"], version = "^0.19.0" }
 black = "^22.10.0"
 flake8 = "^5.0.4"
 isort = "^5.10.1"
@@ -31,7 +31,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-color = true
+color = false             # color output breaks vscode python extension
 target-version = ['py39']
 
 [tool.isort]
