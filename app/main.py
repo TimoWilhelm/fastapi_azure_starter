@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
-import httpx
 from fastapi import FastAPI, Request, Response, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from httpx import AsyncClient
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from uvicorn import run
@@ -62,7 +62,7 @@ app.include_router(
 
 
 async def make_sample_request():
-    async with httpx.AsyncClient() as client:
+    async with AsyncClient() as client:
         result = await client.get("https://example.com")
         print(result.content)
 
