@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app import limiter
 from app.packages.security import User
 from app.packages.security.dependencies import RoleValidator
-from app.util.tracing import get_tracer
+from app.util.tracing import get_span
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class Greeting(BaseModel):
 )
 @limiter.limit("5/minute")
 async def get_greeting(request: Request, response: Response):
-    with get_tracer().span(name="get_greeting"):
+    with get_span(name="get_greeting"):
         user: User = request.state.user
         logger.info(f"User {user.claims.get('oid')} is requesting a greeting.")
         return Greeting(greeting=f"Hello {user.claims.get('name')}!")
@@ -45,5 +45,5 @@ async def get_greeting(request: Request, response: Response):
     response_model=str,
 )
 async def get_admin(request: Request, response: Response):
-    with get_tracer().span(name="get_user_me"):
+    with get_span(name="get_user_me"):
         return "You are an admin!"

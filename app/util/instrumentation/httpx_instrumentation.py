@@ -1,24 +1,27 @@
 import functools
 import logging
+import os
 import typing
 
 import httpx
-from opencensus.trace import Span, attributes_helper
-from opencensus.trace import span as span_module
-from opencensus.trace import tracer as tracer_module
+from opencensus.trace import Span
+from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
 from opencensus.trace.blank_span import BlankSpan
+from opencensus.trace.span import SpanKind
+from opencensus.trace.tracer import Tracer
 
 logger = logging.getLogger(__name__)
 
-HTTP_URL = attributes_helper.COMMON_ATTRIBUTES["HTTP_URL"]
-HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES["HTTP_METHOD"]
-HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES["HTTP_PATH"]
-HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES["HTTP_ROUTE"]
-HTTP_URL = attributes_helper.COMMON_ATTRIBUTES["HTTP_URL"]
-HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES["HTTP_STATUS_CODE"]
-ERROR_MESSAGE = attributes_helper.COMMON_ATTRIBUTES["ERROR_MESSAGE"]
-ERROR_NAME = attributes_helper.COMMON_ATTRIBUTES["ERROR_NAME"]
-STACKTRACE = attributes_helper.COMMON_ATTRIBUTES["STACKTRACE"]
+PID = COMMON_ATTRIBUTES["PID"]
+HTTP_URL = COMMON_ATTRIBUTES["HTTP_URL"]
+HTTP_METHOD = COMMON_ATTRIBUTES["HTTP_METHOD"]
+HTTP_PATH = COMMON_ATTRIBUTES["HTTP_PATH"]
+HTTP_ROUTE = COMMON_ATTRIBUTES["HTTP_ROUTE"]
+HTTP_URL = COMMON_ATTRIBUTES["HTTP_URL"]
+HTTP_STATUS_CODE = COMMON_ATTRIBUTES["HTTP_STATUS_CODE"]
+ERROR_MESSAGE = COMMON_ATTRIBUTES["ERROR_MESSAGE"]
+ERROR_NAME = COMMON_ATTRIBUTES["ERROR_NAME"]
+STACKTRACE = COMMON_ATTRIBUTES["STACKTRACE"]
 
 RequestHook = typing.Callable[[Span | BlankSpan, "RequestInfo"], typing.Awaitable[None]]
 ResponseHook = typing.Callable[
@@ -44,7 +47,7 @@ class ResponseInfo(typing.NamedTuple):
 class AsyncOpenCensusTransport(httpx.AsyncBaseTransport):
     def __init__(
         self,
-        tracer: tracer_module.Tracer,
+        tracer: Tracer,
         request_hook: typing.Optional[RequestHook] = None,
         response_hook: typing.Optional[ResponseHook] = None,
         transport: typing.Optional[httpx.AsyncBaseTransport] = None,
@@ -85,8 +88,8 @@ class AsyncOpenCensusTransport(httpx.AsyncBaseTransport):
         request_info = RequestInfo(method, url, headers, stream, extensions)
 
         with self._tracer.span(name=f"[{method}]{url}") as span:
-            span.span_kind = span_module.SpanKind.CLIENT
-
+            span.span_kind = SpanKind.CLIENT
+            span.add_attribute(PID, str(os.getpid()))
             span.add_attribute(HTTP_METHOD, method)
             span.add_attribute(HTTP_URL, str(url))
 
@@ -150,7 +153,7 @@ class _InstrumentedAsyncClient(httpx.AsyncClient):
 class HTTPXClientInstrumentation:
     def instrument_global(
         self,
-        tracer: tracer_module.Tracer,
+        tracer: Tracer,
         request_hook: typing.Optional[RequestHook] = None,
         response_hook: typing.Optional[ResponseHook] = None,
     ):
@@ -181,7 +184,7 @@ class HTTPXClientInstrumentation:
     @staticmethod
     def instrument_client(
         client: httpx.AsyncClient,
-        tracer: tracer_module.Tracer,
+        tracer: Tracer,
         request_hook: typing.Optional[RequestHook] = None,
         response_hook: typing.Optional[ResponseHook] = None,
     ) -> None:

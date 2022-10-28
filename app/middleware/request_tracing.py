@@ -1,5 +1,4 @@
-# TODO: track https://github.com/census-instrumentation/opencensus-python/pull/1124
-# Replace with the above when it's merged
+# Adapted from https://github.com/census-instrumentation/opencensus-python/pull/1124
 
 # Copyright 2022, OpenCensus Authors
 #
@@ -16,35 +15,31 @@
 # limitations under the License.
 
 import logging
+import os
 import traceback
 from typing import Union
 
-from opencensus.trace import (
-    attributes_helper,
-    execution_context,
-    print_exporter,
-    samplers,
-)
-from opencensus.trace import span as span_module
-from opencensus.trace import tracer as tracer_module
-from opencensus.trace import utils
+from opencensus.trace import execution_context, print_exporter, samplers, utils
+from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
-from opencensus.trace.span import Span
+from opencensus.trace.span import Span, SpanKind
+from opencensus.trace.tracer import Tracer
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
-HTTP_HOST = attributes_helper.COMMON_ATTRIBUTES["HTTP_HOST"]
-HTTP_METHOD = attributes_helper.COMMON_ATTRIBUTES["HTTP_METHOD"]
-HTTP_PATH = attributes_helper.COMMON_ATTRIBUTES["HTTP_PATH"]
-HTTP_ROUTE = attributes_helper.COMMON_ATTRIBUTES["HTTP_ROUTE"]
-HTTP_URL = attributes_helper.COMMON_ATTRIBUTES["HTTP_URL"]
-HTTP_STATUS_CODE = attributes_helper.COMMON_ATTRIBUTES["HTTP_STATUS_CODE"]
-ERROR_MESSAGE = attributes_helper.COMMON_ATTRIBUTES["ERROR_MESSAGE"]
-ERROR_NAME = attributes_helper.COMMON_ATTRIBUTES["ERROR_NAME"]
-STACKTRACE = attributes_helper.COMMON_ATTRIBUTES["STACKTRACE"]
+PID = COMMON_ATTRIBUTES["PID"]
+HTTP_HOST = COMMON_ATTRIBUTES["HTTP_HOST"]
+HTTP_METHOD = COMMON_ATTRIBUTES["HTTP_METHOD"]
+HTTP_PATH = COMMON_ATTRIBUTES["HTTP_PATH"]
+HTTP_ROUTE = COMMON_ATTRIBUTES["HTTP_ROUTE"]
+HTTP_URL = COMMON_ATTRIBUTES["HTTP_URL"]
+HTTP_STATUS_CODE = COMMON_ATTRIBUTES["HTTP_STATUS_CODE"]
+ERROR_MESSAGE = COMMON_ATTRIBUTES["ERROR_MESSAGE"]
+ERROR_NAME = COMMON_ATTRIBUTES["ERROR_NAME"]
+STACKTRACE = COMMON_ATTRIBUTES["STACKTRACE"]
 
 module_logger = logging.getLogger(__name__)
 
@@ -100,9 +95,9 @@ class RequestTracingMiddleware(BaseHTTPMiddleware):
             propagator or trace_context_http_header_format.TraceContextPropagator()
         )
 
-    def _prepare_tracer(self, request: Request) -> tracer_module.Tracer:
+    def _prepare_tracer(self, request: Request) -> Tracer:
         span_context = self.propagator.from_headers(request.headers)
-        tracer = tracer_module.Tracer(
+        tracer = Tracer(
             span_context=span_context,
             sampler=self.sampler,
             exporter=self.exporter,
@@ -141,7 +136,8 @@ class RequestTracingMiddleware(BaseHTTPMiddleware):
         try:
             tracer = self._prepare_tracer(request)
             span = tracer.start_span(name=f"[{request.method}]{request.url}")
-            span.span_kind = span_module.SpanKind.SERVER
+            span.span_kind = SpanKind.SERVER
+            span.add_attribute(PID, str(os.getpid()))
         except Exception:  # pragma: NO COVER
             module_logger.error("Failed to trace request", exc_info=True)
             return await call_next(request)

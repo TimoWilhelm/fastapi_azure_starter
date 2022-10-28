@@ -5,8 +5,6 @@ import httpx
 from fastapi import FastAPI, Request, Response, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from opencensus.trace.samplers import AlwaysOnSampler
-from opencensus.trace.tracer import Tracer
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from uvicorn import run
@@ -17,12 +15,11 @@ from app.middleware import RequestTracingMiddleware, UncaughtExceptionHandlerMid
 from app.responses import default_responses
 from app.routers import users
 from app.util.instrumentation import HTTPXClientInstrumentation
-from app.util.tracing import azure_trace_exporter
+from app.util.tracing import azure_trace_exporter, get_span, get_tracer
 
 logger = logging.getLogger(__name__)
 
-tracer = Tracer(exporter=azure_trace_exporter, sampler=AlwaysOnSampler())
-HTTPXClientInstrumentation().instrument_global(tracer=tracer)
+HTTPXClientInstrumentation().instrument_global(tracer=get_tracer())
 
 app = FastAPI(
     title="Hello World",
@@ -72,7 +69,7 @@ async def make_sample_request():
 
 @app.on_event("startup")
 async def load_config() -> None:
-    with tracer.span(name="app:startup"):
+    with get_span(name="app:startup"):
         try:
             await asyncio.gather(
                 azure_scheme.init(),
