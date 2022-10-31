@@ -81,12 +81,12 @@ async def load_config() -> None:
 
 
 @app.get("/", include_in_schema=False)
-async def root(request: Request, response: Response):
+async def get_root(request: Request, response: Response):
     return RedirectResponse("/docs")
 
 
 @app.get("/error")
-async def error(request: Request, response: Response):
+async def get_error(request: Request, response: Response):
     raise Exception("This is an error")
 
 
