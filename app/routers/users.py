@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, Request, Response, status
 from pydantic import BaseModel
 
 from app import limiter
-from app.packages.security import User
-from app.packages.security.dependencies import RoleValidator
+from app.packages.auth import User
+from app.packages.auth.dependencies import RoleValidator
 from app.util.tracing import get_span
 
 logger = logging.getLogger(__name__)

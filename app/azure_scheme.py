@@ -1,6 +1,6 @@
 from app import settings
-from app.packages.security import OidcAuthorizationCodeBearer
-from app.packages.security.util import get_azure_oidc_config_url
+from app.packages.auth import OidcAuthorizationCodeBearer
+from app.packages.auth.util import get_azure_oidc_config_url
 
 azure_scheme = OidcAuthorizationCodeBearer(
     name="Azure AD",

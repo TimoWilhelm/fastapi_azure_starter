@@ -4,7 +4,7 @@ from fastapi import Request
 from slowapi import Limiter
 
 from app import settings
-from app.packages.security import User
+from app.packages.auth import User
 
 
 def key_func(request: Request) -> str:
