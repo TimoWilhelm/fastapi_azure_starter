@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from fastapi import FastAPI, Request, Response, Security
+from fastapi import FastAPI, Request, Response, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from httpx import AsyncClient
@@ -36,7 +36,13 @@ app.add_middleware(ProxyHeadersMiddleware)
 app.add_middleware(UncaughtExceptionHandlerMiddleware)
 app.add_middleware(
     RequestTracingMiddleware,
-    excludelist_paths=["docs", "redoc", "openapi.json", "oauth2-redirect"],
+    excludelist_paths=[
+        # no leading slash!
+        "docs",
+        "redoc",
+        "openapi.json",
+        "oauth2-redirect",
+    ],
     exporter=azure_trace_exporter,
 )
 
@@ -83,6 +89,11 @@ async def load_config() -> None:
 @app.get("/", include_in_schema=False)
 async def get_root(request: Request, response: Response):
     return RedirectResponse("/docs")
+
+
+@app.get("/health", include_in_schema=False)
+def health(request: Request, response: Response):
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.get("/error")
