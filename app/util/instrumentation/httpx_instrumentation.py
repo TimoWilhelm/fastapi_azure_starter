@@ -1,7 +1,7 @@
 import functools
 import logging
 import os
-import typing
+from typing import Awaitable, Callable, NamedTuple, cast
 
 import httpx
 from opencensus.trace import Span
@@ -23,47 +23,47 @@ ERROR_MESSAGE = COMMON_ATTRIBUTES["ERROR_MESSAGE"]
 ERROR_NAME = COMMON_ATTRIBUTES["ERROR_NAME"]
 STACKTRACE = COMMON_ATTRIBUTES["STACKTRACE"]
 
-RequestHook = typing.Callable[[Span | BlankSpan, "RequestInfo"], typing.Awaitable[None]]
-ResponseHook = typing.Callable[
-    [Span | BlankSpan, "RequestInfo", "ResponseInfo"], typing.Awaitable[None]
+RequestHook = Callable[[Span | BlankSpan, "RequestInfo"], Awaitable[None]]
+ResponseHook = Callable[
+    [Span | BlankSpan, "RequestInfo", "ResponseInfo"], Awaitable[None]
 ]
 
 
-class RequestInfo(typing.NamedTuple):
+class RequestInfo(NamedTuple):
     method: str
     url: httpx.URL
-    headers: typing.Optional[httpx.Headers]
-    stream: typing.Optional[typing.Union[httpx.SyncByteStream, httpx.AsyncByteStream]]
-    extensions: typing.Optional[dict]
+    headers: httpx.Headers | None
+    stream: httpx.SyncByteStream | httpx.AsyncByteStream | None
+    extensions: dict | None
 
 
-class ResponseInfo(typing.NamedTuple):
+class ResponseInfo(NamedTuple):
     status_code: int
-    headers: typing.Optional[httpx.Headers]
-    stream: typing.Optional[typing.Union[httpx.SyncByteStream, httpx.AsyncByteStream]]
-    extensions: typing.Optional[dict]
+    headers: httpx.Headers | None
+    stream: httpx.SyncByteStream | httpx.AsyncByteStream | None
+    extensions: dict | None
 
 
 class AsyncOpenCensusTransport(httpx.AsyncBaseTransport):
     def __init__(
         self,
         tracer: Tracer,
-        request_hook: typing.Optional[RequestHook] = None,
-        response_hook: typing.Optional[ResponseHook] = None,
-        transport: typing.Optional[httpx.AsyncBaseTransport] = None,
+        request_hook: RequestHook | None = None,
+        response_hook: ResponseHook | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
     ):
         """Async transport class that will trace all requests made with a client.
 
 
         Args:
             tracer (tracer_module.Tracer): The tracer to use for this transport.
-            request_hook (typing.Optional[RequestHook], optional):
+            request_hook (RequestHook, optional):
                 A hook that receives the span and request that is called
                 right after the span is created. Defaults to None.
-            response_hook (typing.Optional[ResponseHook], optional):
+            response_hook (ResponseHook, optional):
                 A hook that receives the span, request, and response
                 that is called right before the span ends. Defaults to None.
-            transport (typing.Optional[httpx.AsyncBaseTransport], optional):
+            transport (httpx.AsyncBaseTransport, optional):
                 The AsyncHTTPTransport instance to wrap. Defaults to AsyncHTTPTransport.
         """
         self._transport = transport or httpx.AsyncHTTPTransport()
@@ -73,10 +73,7 @@ class AsyncOpenCensusTransport(httpx.AsyncBaseTransport):
 
     async def handle_async_request(
         self, *args, **kwargs
-    ) -> typing.Union[
-        typing.Tuple[int, httpx.Headers, httpx.AsyncByteStream, dict],
-        httpx.Response,
-    ]:
+    ) -> tuple[int, httpx.Headers, httpx.AsyncByteStream, dict] | httpx.Response:
         request: httpx.Request = args[0]
 
         method = request.method.upper()
@@ -154,17 +151,17 @@ class HTTPXClientInstrumentation:
     def instrument_global(
         self,
         tracer: Tracer,
-        request_hook: typing.Optional[RequestHook] = None,
-        response_hook: typing.Optional[ResponseHook] = None,
+        request_hook: RequestHook | None = None,
+        response_hook: ResponseHook | None = None,
     ):
         """Start global instrumentation for httpx.AsyncClient.
 
         Args:
             tracer (tracer_module.Tracer): The tracer to use for this transport.
-            request_hook (typing.Optional[RequestHook], optional):
+            request_hook (RequestHook, optional):
                 A hook that receives the span and request that is called
                 right after the span is created. Defaults to None.
-            response_hook (typing.Optional[ResponseHook], optional):
+            response_hook (ResponseHook, optional):
                 A hook that receives the span, request, and response
                 that is called right before the span ends. Defaults to None.
         """
@@ -185,18 +182,18 @@ class HTTPXClientInstrumentation:
     def instrument_client(
         client: httpx.AsyncClient,
         tracer: Tracer,
-        request_hook: typing.Optional[RequestHook] = None,
-        response_hook: typing.Optional[ResponseHook] = None,
+        request_hook: RequestHook | None = None,
+        response_hook: ResponseHook | None = None,
     ) -> None:
         """Start instrumentation for an instance of httpx.AsyncClient.
 
         Args:
             client (httpx.AsyncClient): The httpx client.
             tracer (tracer_module.Tracer): The tracer to use for this transport.
-            request_hook (typing.Optional[RequestHook], optional):
+            request_hook (RequestHook, optional):
                 A hook that receives the span and request that is called
                 right after the span is created. Defaults to None.
-            response_hook (typing.Optional[ResponseHook], optional):
+            response_hook (ResponseHook, optional):
                 A hook that receives the span, request, and response
                 that is called right before the span ends. Defaults to None.
         """
@@ -206,7 +203,7 @@ class HTTPXClientInstrumentation:
             )
             return
 
-        instrumented_client = typing.cast(_InstrumentedAsyncClient, client)
+        instrumented_client = cast(_InstrumentedAsyncClient, client)
 
         instrumented_client._original_transport = client._transport
         instrumented_client._transport = AsyncOpenCensusTransport(
@@ -232,7 +229,7 @@ class HTTPXClientInstrumentation:
             )
             return
 
-        instrumented_client = typing.cast(_InstrumentedAsyncClient, client)
+        instrumented_client = cast(_InstrumentedAsyncClient, client)
 
         client._transport = instrumented_client._original_transport
         del instrumented_client._original_transport

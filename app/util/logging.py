@@ -1,7 +1,6 @@
 import logging
 import re
 import sys
-from typing import List, Optional
 
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.trace import config_integration
@@ -30,7 +29,7 @@ def init_logging():
         CustomFormatter("[%(asctime)s] [%(process)d] [%(levelname)s] %(message)s")
     )
 
-    handlers: List[logging.Handler] = [
+    handlers: list[logging.Handler] = [
         console_handler,
         AzureLogHandler(
             connection_string=settings.APPLICATIONINSIGHTS_CONNECTION_STRING
@@ -48,7 +47,7 @@ class UvicornLoggingFilter(logging.Filter):
     def __init__(
         self,
         path: str,
-        method: Optional[str] = None,
+        method: str | None = None,
         *args,
         **kwargs,
     ):
@@ -58,7 +57,7 @@ class UvicornLoggingFilter(logging.Filter):
             uvicorn_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
         Args:
             path (str): The request path to filter.
-            method (Optional[str], optional): The request method to filter. Defaults to None.
+            method (str, optional): The request method to filter. Defaults to None.
         """
         super().__init__(*args, **kwargs)
         self._path = path

@@ -17,7 +17,6 @@
 import logging
 import os
 import traceback
-from typing import Union
 
 from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
@@ -105,7 +104,7 @@ class RequestTracingMiddleware(BaseHTTPMiddleware):
         )
         return tracer
 
-    def _before_request(self, span: Union[Span, BlankSpan], request: Request):
+    def _before_request(self, span: Span | BlankSpan, request: Request):
         span.add_attribute(HTTP_HOST, request.url.hostname)
         span.add_attribute(HTTP_METHOD, request.method)
         span.add_attribute(HTTP_PATH, request.url.path)
@@ -115,10 +114,10 @@ class RequestTracingMiddleware(BaseHTTPMiddleware):
             "excludelist_hostnames", self.excludelist_hostnames
         )
 
-    def _after_request(self, span: Union[Span, BlankSpan], response: Response):
+    def _after_request(self, span: Span | BlankSpan, response: Response):
         span.add_attribute(HTTP_STATUS_CODE, response.status_code)
 
-    def _handle_exception(self, span: Union[Span, BlankSpan], exception: Exception):
+    def _handle_exception(self, span: Span | BlankSpan, exception: Exception):
         span.add_attribute(ERROR_NAME, exception.__class__.__name__)
         span.add_attribute(ERROR_MESSAGE, str(exception))
         span.add_attribute(

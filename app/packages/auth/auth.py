@@ -1,5 +1,4 @@
 import logging
-from typing import Dict, List, Optional
 
 from fastapi.exceptions import HTTPException
 from fastapi.security import (
@@ -25,12 +24,12 @@ class OidcAuthorizationCodeBearer(SecurityBase):
         self,
         config_url: str,
         client_id: str,
-        scopes: Optional[Dict[str, str]] = None,
-        algorithms: Optional[List[str]] = None,
+        scopes: dict[str, str] | None = None,
+        algorithms: list[str] | None = None,
         auto_error: bool = True,
         config_timeout_in_h: int = 24,
         name: str = "OpenID Connect",
-        openapi_description: Optional[str] = None,
+        openapi_description: str | None = None,
     ) -> None:
         """Returns a security scheme that uses OpenID Connect to authenticate users.
 
@@ -39,7 +38,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
                 The OpenID Connect Discovery URL.
             client_id (str):
                 The API client ID.
-            scopes (Optional[Dict[str, str]], optional):
+            scopes (dict[str, str], optional):
                 The OAuth Scopes your application uses.
                 Defaults to None.
 
@@ -48,7 +47,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
                     {
                         f'api://example.com/user_impersonation': 'user impersonation'
                     }
-            algorithms (List[str], optional):
+            algorithms (list[str], optional):
                 The supported signing key algorithms for the token.
                 Defaults to ["RS256", "RS384", "RS512"].
             auto_error (bool, optional):
@@ -57,7 +56,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
                 The number of hours to cache the OpenID Connect Discovery document. Defaults to 24.
             name (str, optional):
                 The OpenAPI name of the auth scheme. Defaults to "OpenID Connect".
-            openapi_description (Optional[str], optional):
+            openapi_description (str, optional):
                 The OpenAPI description of the auth scheme. Defaults to None.
         """
         self.client_id = client_id
@@ -116,7 +115,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
 
     async def __call__(
         self, request: Request, security_scopes: SecurityScopes
-    ) -> Optional[User]:
+    ) -> User | None:
         # refresh config if needed
         await self.openid_config.load_config()
 
@@ -128,10 +127,13 @@ class OidcAuthorizationCodeBearer(SecurityBase):
 
             claims = self._verify(access_token)
 
-            token_scope_string = claims.get("scp", "")
+            token_scope_string: str = claims.get("scp", "")
+
             if not isinstance(token_scope_string, str):
                 raise InvalidAuthException("Token contains invalid formatted scopes")
+
             token_scopes = token_scope_string.split(" ")
+
             for scope in security_scopes.scopes:
                 if scope not in token_scopes:
                     raise InvalidAuthException("Required scope missing")

@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
@@ -17,9 +16,7 @@ azure_trace_exporter = AzureExporter(
 )
 
 
-def get_tracer(
-    span_context: Optional[SpanContext] = None, sampler: Optional[Sampler] = None
-):
+def get_tracer(span_context: SpanContext | None = None, sampler: Sampler | None = None):
     return Tracer(
         span_context=span_context,
         sampler=sampler or AlwaysOnSampler(),
@@ -30,8 +27,8 @@ def get_tracer(
 
 def get_span(
     name: str = "span",
-    span_context: Optional[SpanContext] = None,
-    sampler: Optional[Sampler] = None,
+    span_context: SpanContext | None = None,
+    sampler: Sampler | None = None,
 ):
     tracer = Tracer(
         span_context=span_context,

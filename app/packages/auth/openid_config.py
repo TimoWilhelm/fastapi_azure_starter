@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 from httpx import AsyncClient
 from jwt.jwks_client import PyJWKClient
@@ -17,7 +16,7 @@ class OpenIdConfig:
         self.config_url = config_url
         self.timeout_in_h = timeout_in_h
 
-        self._config_timestamp: Optional[datetime] = None
+        self._config_timestamp: datetime | None = None
 
         self.authorization_endpoint: str
         self.token_endpoint: str
