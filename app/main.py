@@ -15,11 +15,16 @@ from app.middleware import RequestTracingMiddleware, UncaughtExceptionHandlerMid
 from app.responses import default_responses
 from app.routers import users
 from app.util.instrumentation import HTTPXClientInstrumentation
+from app.util.logging import UvicornLoggingFilter
 from app.util.tracing import azure_trace_exporter, get_span, get_tracer
 
 logger = logging.getLogger(__name__)
 
 HTTPXClientInstrumentation().instrument_global(tracer=get_tracer())
+
+uvicorn_logger = logging.getLogger("uvicorn.access")
+uvicorn_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
+uvicorn_logger.addFilter(UvicornLoggingFilter(path="/oauth2-redirect"))
 
 app = FastAPI(
     title="Hello World",
@@ -37,11 +42,8 @@ app.add_middleware(UncaughtExceptionHandlerMiddleware)
 app.add_middleware(
     RequestTracingMiddleware,
     excludelist_paths=[
-        # no leading slash!
-        "docs",
-        "redoc",
-        "openapi.json",
-        "oauth2-redirect",
+        "/health",
+        "/oauth2-redirect",
     ],
     exporter=azure_trace_exporter,
 )

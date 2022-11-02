@@ -19,7 +19,7 @@ import os
 import traceback
 from typing import Union
 
-from opencensus.trace import execution_context, print_exporter, samplers, utils
+from opencensus.trace import execution_context, print_exporter, samplers
 from opencensus.trace.attributes_helper import COMMON_ATTRIBUTES
 from opencensus.trace.blank_span import BlankSpan
 from opencensus.trace.propagation import trace_context_http_header_format
@@ -129,8 +129,11 @@ class RequestTracingMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
 
-        # Do not trace if the url is in the exclude list
-        if utils.disable_tracing_url(str(request.url), self.excludelist_paths):
+        # Do not trace if the path is in the excludelist_paths list
+        if (
+            self.excludelist_paths is not None
+            and request.url.path.rstrip("/") in self.excludelist_paths
+        ):
             return await call_next(request)
 
         try:

@@ -1,7 +1,7 @@
 import logging
 import re
 import sys
-from typing import List
+from typing import List, Optional
 
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.trace import config_integration
@@ -42,3 +42,42 @@ def init_logging():
         level=settings.LOG_LEVEL,
         handlers=handlers,
     )
+
+
+class UvicornLoggingFilter(logging.Filter):
+    def __init__(
+        self,
+        path: str,
+        method: Optional[str] = None,
+        *args,
+        **kwargs,
+    ):
+        """Filter out uvicorn log records for a specific endpoint.
+        Usage:
+            uvicorn_logger = logging.getLogger("uvicorn.access")
+            uvicorn_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
+        Args:
+            path (str): The request path to filter.
+            method (Optional[str], optional): The request method to filter. Defaults to None.
+        """
+        super().__init__(*args, **kwargs)
+        self._path = path
+        self._method = method
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.args is None or len(record.args) < 3:
+            return True
+
+        # Record args are (remote_addr, method, path_with_query, http_version, status_code)
+        method: str = record.args[1]  # type: ignore
+        path_with_query: str = record.args[2]  # type: ignore
+
+        if self._method is not None and method != self._method:
+            return True
+
+        path = path_with_query.split("?")[0].rstrip("/")
+
+        if path == self._path:
+            return False
+
+        return True
