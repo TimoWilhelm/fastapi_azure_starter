@@ -1,7 +1,4 @@
-import multiprocessing
-
 from app import settings
 
-workers = multiprocessing.cpu_count() * 2 + 1
-
+workers = settings.WORKER_COUNT
 loglevel = settings.LOG_LEVEL

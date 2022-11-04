@@ -44,13 +44,7 @@ def init_logging():
 
 
 class UvicornLoggingFilter(logging.Filter):
-    def __init__(
-        self,
-        path: str,
-        method: str | None = None,
-        *args,
-        **kwargs,
-    ):
+    def __init__(self, path: str, method: str | None = None):
         """Filter out uvicorn log records for a specific endpoint.
         Usage:
             uvicorn_logger = logging.getLogger("uvicorn.access")
@@ -59,7 +53,7 @@ class UvicornLoggingFilter(logging.Filter):
             path (str): The request path to filter.
             method (str, optional): The request method to filter. Defaults to None.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__()
         self._path = path
         self._method = method
 

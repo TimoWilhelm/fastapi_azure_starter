@@ -30,7 +30,7 @@ class Greeting(BaseModel):
         },
     },
 )
-@limiter.limit("5/minute")
+@limiter.limit("10/minute")
 async def get_greeting(request: Request, response: Response):
     with get_span(name="get_greeting"):
         user: User = request.state.user
