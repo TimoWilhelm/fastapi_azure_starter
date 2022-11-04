@@ -1,17 +1,12 @@
 import logging
 import sys
 
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-from opencensus.trace import config_integration
-
 from app import settings
 
 logger = logging.getLogger(__name__)
 
 
 def init_logging():
-    config_integration.trace_integrations(["logging"])
-
     # messages lower than WARNING go to stdout
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.addFilter(MaxLevelFilter(logging.WARNING))
@@ -20,13 +15,7 @@ def init_logging():
     stderr_handler = logging.StreamHandler(sys.stderr)
     stderr_handler.setLevel(logging.WARNING)
 
-    handlers: list[logging.Handler] = [
-        stdout_handler,
-        stderr_handler,
-        AzureLogHandler(
-            connection_string=settings.APPLICATIONINSIGHTS_CONNECTION_STRING
-        ),
-    ]
+    handlers: list[logging.Handler] = [stdout_handler, stderr_handler]
 
     logging.basicConfig(
         force=True,

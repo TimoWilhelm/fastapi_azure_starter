@@ -27,11 +27,6 @@ class Settings(BaseSettings):
         le=multiprocessing.cpu_count() * 2 + 1,
     )
 
-    APPLICATIONINSIGHTS_CONNECTION_STRING: str = Field(
-        default="InstrumentationKey=00000000-0000-0000-0000-000000000000",
-        env="APPLICATIONINSIGHTS_CONNECTION_STRING",
-    )
-
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

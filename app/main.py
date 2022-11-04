@@ -8,16 +8,12 @@ from slowapi.errors import RateLimitExceeded
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app import azure_scheme, limiter, settings
-from app.middleware import RequestTracingMiddleware, UncaughtExceptionHandlerMiddleware
+from app.middleware import UncaughtExceptionHandlerMiddleware
 from app.responses import default_responses
 from app.routers import users
-from app.util.instrumentation import HTTPXClientInstrumentation
 from app.util.logging import UvicornLoggingFilter
-from app.util.tracing import azure_trace_exporter, get_tracer
 
 logger = logging.getLogger(__name__)
-
-HTTPXClientInstrumentation().instrument_global(tracer=get_tracer())
 
 uvicorn_access_logger = logging.getLogger("uvicorn.access")
 uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
@@ -36,14 +32,6 @@ app = FastAPI(
 
 app.add_middleware(ProxyHeadersMiddleware)
 app.add_middleware(UncaughtExceptionHandlerMiddleware)
-app.add_middleware(
-    RequestTracingMiddleware,
-    excludelist_paths=[
-        "/health",
-        "/oauth2-redirect",
-    ],
-    exporter=azure_trace_exporter,
-)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
