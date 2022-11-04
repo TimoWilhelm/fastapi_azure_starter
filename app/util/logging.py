@@ -24,13 +24,17 @@ class CustomFormatter(logging.Formatter):
 def init_logging():
     config_integration.trace_integrations(["logging"])
 
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(
-        CustomFormatter("[%(asctime)s] [%(process)d] [%(levelname)s] %(message)s")
-    )
+    # messages lower than WARNING go to stdout
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.addFilter(MaxLevelFilter(logging.WARNING))
+
+    # messages >= WARNING ( and >= STDOUT_LOG_LEVEL ) go to stderr
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setLevel(logging.WARNING)
 
     handlers: list[logging.Handler] = [
-        console_handler,
+        stdout_handler,
+        stderr_handler,
         AzureLogHandler(
             connection_string=settings.APPLICATIONINSIGHTS_CONNECTION_STRING
         ),
@@ -40,7 +44,18 @@ def init_logging():
         force=True,
         level=settings.LOG_LEVEL,
         handlers=handlers,
+        format="[%(asctime)s] [%(process)d] [%(levelname)s] %(message)s",
     )
+
+
+class MaxLevelFilter(logging.Filter):
+    """Filters out messages with level < LEVEL"""
+
+    def __init__(self, level: int):
+        self.level = level
+
+    def filter(self, record):
+        return record.levelno < self.level
 
 
 class UvicornLoggingFilter(logging.Filter):

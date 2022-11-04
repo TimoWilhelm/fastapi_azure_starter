@@ -1,13 +1,10 @@
-import asyncio
 import logging
 
 from fastapi import FastAPI, Request, Response, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-from httpx import AsyncClient
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from uvicorn import run
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app import azure_scheme, limiter, settings
@@ -16,7 +13,7 @@ from app.responses import default_responses
 from app.routers import users
 from app.util.instrumentation import HTTPXClientInstrumentation
 from app.util.logging import UvicornLoggingFilter
-from app.util.tracing import azure_trace_exporter, get_span, get_tracer
+from app.util.tracing import azure_trace_exporter, get_tracer
 
 logger = logging.getLogger(__name__)
 
@@ -69,23 +66,9 @@ app.include_router(
 )
 
 
-async def make_sample_request():
-    async with AsyncClient() as client:
-        result = await client.get("https://example.com")
-        print(result.content)
-
-
 @app.on_event("startup")
-async def load_config() -> None:
-    with get_span(name="app:startup"):
-        try:
-            await asyncio.gather(
-                azure_scheme.init(),
-                make_sample_request(),
-            )
-        except Exception:  # pragma: NO COVER
-            logger.error("Error during application startup", exc_info=True)
-            raise
+async def init_auth() -> None:
+    await azure_scheme.init()
 
 
 @app.get("/", include_in_schema=False)
@@ -101,7 +84,3 @@ def health(request: Request, response: Response):
 @app.get("/error")
 async def get_error(request: Request, response: Response):
     raise Exception("This is an error")
-
-
-if __name__ == "__main__":
-    run("main:app", reload=True, port=8000)

@@ -64,4 +64,4 @@ class OpenIdConfig:
             self.issuer = openid_cfg["issuer"]
 
             jwks_uri = openid_cfg["jwks_uri"]
-            self.jwks_client = PyJWKClient(jwks_uri)
+            self.jwks_client = PyJWKClient(jwks_uri, cache_keys=True)
