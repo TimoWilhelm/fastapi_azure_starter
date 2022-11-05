@@ -14,6 +14,13 @@ from .exceptions import InvalidAuthException, NotInitializedException
 from .openid_config import OpenIdConfig
 from .user import User
 
+try:
+    from opentelemetry import trace
+
+    has_opentelemetry = True
+except ModuleNotFoundError:
+    has_opentelemetry = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -143,6 +150,15 @@ class OidcAuthorizationCodeBearer(SecurityBase):
                 **{**claims, "claims": claims, "access_token": access_token}
             )
             request.state.user = user
+
+            # Add the user id to the opentelemetry tracing span
+            if has_opentelemetry:
+                user_id: str | None = user.claims.get("oid") or user.claims.get("sub")
+                if user_id is not None:
+                    current_span = trace.get_current_span()
+                    if current_span:
+                        current_span.set_attribute("user_id", user_id)
+
             return user
 
         except (HTTPException, InvalidAuthException):
