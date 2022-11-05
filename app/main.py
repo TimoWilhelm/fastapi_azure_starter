@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 HTTPXClientInstrumentation().instrument_global(tracer=get_tracer())
 
-uvicorn_logger = logging.getLogger("uvicorn.access")
-uvicorn_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
-uvicorn_logger.addFilter(UvicornLoggingFilter(path="/oauth2-redirect"))
+uvicorn_access_logger = logging.getLogger("uvicorn.access")
+uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
+uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/oauth2-redirect"))
 
 app = FastAPI(
     title="Hello World",

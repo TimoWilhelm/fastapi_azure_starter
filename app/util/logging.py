@@ -1,5 +1,4 @@
 import logging
-import re
 import sys
 
 from opencensus.ext.azure.log_exporter import AzureLogHandler
@@ -8,17 +7,6 @@ from opencensus.trace import config_integration
 from app import settings
 
 logger = logging.getLogger(__name__)
-
-
-class CustomFormatter(logging.Formatter):
-    def format(self, record: logging.LogRecord) -> str:
-        arg_pattern = re.compile(r"%\((\w+)\)")
-        arg_names = [x.group(1) for x in arg_pattern.finditer(self._fmt or "")]
-        for field in arg_names:
-            if field not in record.__dict__:
-                record.__dict__[field] = None
-
-        return super().format(record)
 
 
 def init_logging():
@@ -42,10 +30,18 @@ def init_logging():
 
     logging.basicConfig(
         force=True,
-        level=settings.LOG_LEVEL,
+        level=settings.LOG_LEVEL.upper(),
         handlers=handlers,
-        format="[%(asctime)s] [%(process)d] [%(levelname)s] %(message)s",
+        format="[%(levelname)s] [%(asctime)s] [%(process)d] %(message)s",
     )
+
+    uvicorn_error_logger = logging.getLogger("uvicorn.error")
+    uvicorn_error_logger.setLevel(settings.LOG_LEVEL.upper())
+    uvicorn_error_logger.handlers = handlers
+
+    uvicorn_access_logger = logging.getLogger("uvicorn.access")
+    uvicorn_access_logger.setLevel(settings.LOG_LEVEL.upper())
+    uvicorn_error_logger.handlers = handlers
 
 
 class MaxLevelFilter(logging.Filter):
