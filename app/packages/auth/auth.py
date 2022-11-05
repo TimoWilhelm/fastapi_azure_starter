@@ -15,7 +15,7 @@ from .openid_config import OpenIdConfig
 from .user import User
 
 try:
-    from opentelemetry import trace
+    from opentelemetry import trace  # noqa
 
     has_opentelemetry = True
 except ModuleNotFoundError:
