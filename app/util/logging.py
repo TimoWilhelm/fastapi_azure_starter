@@ -30,17 +30,17 @@ def init_logging():
 
     logging.basicConfig(
         force=True,
-        level=settings.LOG_LEVEL.upper(),
+        level=settings.LOG_LEVEL,
         handlers=handlers,
         format="[%(levelname)s] [%(asctime)s] [%(process)d] %(message)s",
     )
 
     uvicorn_error_logger = logging.getLogger("uvicorn.error")
-    uvicorn_error_logger.setLevel(settings.LOG_LEVEL.upper())
+    uvicorn_error_logger.setLevel(settings.LOG_LEVEL)
     uvicorn_error_logger.handlers = handlers
 
     uvicorn_access_logger = logging.getLogger("uvicorn.access")
-    uvicorn_access_logger.setLevel(settings.LOG_LEVEL.upper())
+    uvicorn_access_logger.setLevel(settings.LOG_LEVEL)
     uvicorn_error_logger.handlers = handlers
 
 
