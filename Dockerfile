@@ -32,11 +32,4 @@ COPY ./app /app
 
 EXPOSE 8080
 
-ENV OTEL_PYTHON_EXCLUDED_URLS="health,oauth2-redirect"
-ENV OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST="Accept-Encoding,User-Agent,Referer"
-ENV OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE="Last-Modified,Content-Type"
-
-CMD [ \
-    "opentelemetry-instrument", "--traces_exporter=otlp", "--metrics_exporter=otlp", "--logs_exporter=otlp", \
-    "gunicorn", "app.main:app", "--config=./gunicorn.conf.py", "--worker-class=app.worker.HeadlessUvicornWorker", "--bind=0.0.0.0:8080" \
-    ]
+CMD ["gunicorn", "app.main:app", "--config=./gunicorn.conf.py", "--worker-class=app.worker.HeadlessUvicornWorker", "--bind=0.0.0.0:8080"]

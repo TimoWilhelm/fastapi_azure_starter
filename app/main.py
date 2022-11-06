@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI, Request, Response, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
@@ -29,6 +30,8 @@ app = FastAPI(
         "clientId": settings.OPENAPI_CLIENT_ID,
     },
 )
+
+FastAPIInstrumentor.instrument_app(app, excluded_urls="health,oauth2-redirect")
 
 app.add_middleware(ProxyHeadersMiddleware)
 app.add_middleware(UncaughtExceptionHandlerMiddleware)

@@ -17,15 +17,12 @@ httpx = "^0.23.0"
 redis = "^4.3.4"
 cryptography = "^38.0.3"
 pyjwt = "^2.6.0"
-opentelemetry-distro = { extras = ["otlp"], version = "^0.35b0" }
-opentelemetry-instrumentation-dbapi = "^0.35b0"
 opentelemetry-instrumentation-logging = "^0.35b0"
 opentelemetry-instrumentation-fastapi = "^0.35b0"
-opentelemetry-instrumentation-grpc = "^0.35b0"
 opentelemetry-instrumentation-httpx = "^0.35b0"
 opentelemetry-instrumentation-redis = "^0.35b0"
-opentelemetry-instrumentation-requests = "^0.35b0"
 opentelemetry-instrumentation-system-metrics = "^0.35b0"
+azure-monitor-opentelemetry-exporter = "^1.0.0b8"
 
 
 [tool.poetry.group.dev.dependencies]

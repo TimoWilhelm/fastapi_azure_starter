@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO", env="LOG_LEVEL"
     )
+    DEPENDENCIES_LOG_LEVEL: Literal[
+        "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+    ] = Field(
+        default="WARNING",
+        env="DEPENDENCIES_LOG_LEVEL",
+    )
 
     # https://docs.gunicorn.org/en/stable/design.html#how-many-workers
     WORKER_COUNT: int = Field(
@@ -25,6 +31,18 @@ class Settings(BaseSettings):
         env="WORKER_COUNT",
         gt=0,
         le=multiprocessing.cpu_count() * 2 + 1,
+    )
+
+    APPLICATIONINSIGHTS_CONNECTION_STRING: str = Field(
+        default="InstrumentationKey=00000000-0000-0000-0000-000000000000",
+        env="APPLICATIONINSIGHTS_CONNECTION_STRING",
+    )
+
+    TRACING_SAMPLER_RATE: float = Field(
+        default=1.0,
+        env="TRACING_SAMPLER_RATE",
+        ge=0.0,
+        le=1.0,
     )
 
     class Config:
