@@ -1,11 +1,11 @@
 import multiprocessing
 from typing import Literal
 
-from pydantic import BaseSettings, Field, HttpUrl, RedisDsn
+from pydantic import AnyHttpUrl, BaseSettings, Field, RedisDsn
 
 
 class Settings(BaseSettings):
-    BACKEND_CORS_ORIGINS: list[HttpUrl] = Field(
+    BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = Field(
         default=["http://localhost:8000"], env="BACKEND_CORS_ORIGINS"
     )
 
