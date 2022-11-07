@@ -18,4 +18,6 @@ init_logging()
 LoggingInstrumentor().instrument()
 HTTPXClientInstrumentor().instrument()
 RedisInstrumentor().instrument()
-SystemMetricsInstrumentor().instrument()
+
+if settings.SYSTEM_METRICS_ENABLED:
+    SystemMetricsInstrumentor().instrument()

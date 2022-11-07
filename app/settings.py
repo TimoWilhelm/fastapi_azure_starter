@@ -45,6 +45,11 @@ class Settings(BaseSettings):
         le=1.0,
     )
 
+    SYSTEM_METRICS_ENABLED: bool = Field(
+        default=False,
+        env="SYSTEM_METRICS_ENABLED",
+    )
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
