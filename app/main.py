@@ -3,21 +3,19 @@ import logging
 from fastapi import FastAPI, Request, Response, Security, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app import azure_scheme, limiter, settings
-from app.middleware import RequestTracingMiddleware, UncaughtExceptionHandlerMiddleware
+from app.middleware import UncaughtExceptionHandlerMiddleware
 from app.responses import default_responses
 from app.routers import users
-from app.util.instrumentation import HTTPXClientInstrumentation
 from app.util.logging import UvicornLoggingFilter
-from app.util.tracing import azure_trace_exporter, get_tracer
 
 logger = logging.getLogger(__name__)
-
-HTTPXClientInstrumentation().instrument_global(tracer=get_tracer())
 
 uvicorn_access_logger = logging.getLogger("uvicorn.access")
 uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
@@ -34,19 +32,14 @@ app = FastAPI(
     },
 )
 
+FastAPIInstrumentor.instrument_app(app, excluded_urls="health,oauth2-redirect")
+
 app.add_middleware(ProxyHeadersMiddleware)
 app.add_middleware(UncaughtExceptionHandlerMiddleware)
-app.add_middleware(
-    RequestTracingMiddleware,
-    excludelist_paths=[
-        "/health",
-        "/oauth2-redirect",
-    ],
-    exporter=azure_trace_exporter,
-)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
@@ -61,7 +54,9 @@ app.include_router(
     users.router,
     prefix="/users",
     tags=["users"],
-    dependencies=[Security(azure_scheme, scopes=["user_impersonation"])],
+    dependencies=[
+        Security(azure_scheme, scopes=["user_impersonation"]),
+    ],
     responses={**default_responses},
 )
 

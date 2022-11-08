@@ -6,10 +6,12 @@ from app.packages.auth import User
 
 
 def key_func(request: Request) -> str:
-    user: User | None = request.state.user
+    user: User | None = getattr(request.state, "user", None)
 
     if user is not None:
-        return str(user.claims.get("oid") or user.claims.get("sub"))
+        user_id = user.claims.get("sub")
+        if isinstance(user_id, str) and user_id != "":
+            return user_id
 
     if request.client is not None:
         return request.client.host
