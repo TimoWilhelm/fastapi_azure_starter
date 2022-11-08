@@ -134,7 +134,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
 
             claims = self._verify(access_token)
 
-            token_scope_string: str = claims.get("scp", "")
+            token_scope_string = claims.get("scp")
 
             if not isinstance(token_scope_string, str):
                 raise InvalidAuthException("Token contains invalid formatted scopes")
@@ -153,8 +153,8 @@ class OidcAuthorizationCodeBearer(SecurityBase):
 
             # Add the user id to the opentelemetry tracing span
             if has_opentelemetry:
-                user_id: str | None = user.claims.get("oid") or user.claims.get("sub")
-                if user_id is not None:
+                user_id = user.claims.get("oid") or user.claims.get("sub")
+                if isinstance(user_id, str):
                     current_span = trace.get_current_span()
                     if current_span:
                         current_span.set_attribute("user_id", user_id)

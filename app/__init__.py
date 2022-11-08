@@ -12,8 +12,10 @@ from .limiter import limiter
 __all__ = ["settings", "azure_scheme", "limiter"]
 
 from .util.logging import init_logging
+from .util.otel import init_azure_monitor
 
 init_logging()
+init_azure_monitor()
 
 LoggingInstrumentor().instrument()
 HTTPXClientInstrumentor().instrument()

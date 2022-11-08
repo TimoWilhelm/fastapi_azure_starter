@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app import azure_scheme, limiter, settings
@@ -38,6 +39,7 @@ app.add_middleware(UncaughtExceptionHandlerMiddleware)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
@@ -52,7 +54,9 @@ app.include_router(
     users.router,
     prefix="/users",
     tags=["users"],
-    dependencies=[Security(azure_scheme, scopes=["user_impersonation"])],
+    dependencies=[
+        Security(azure_scheme, scopes=["user_impersonation"]),
+    ],
     responses={**default_responses},
 )
 

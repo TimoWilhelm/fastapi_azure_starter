@@ -1,5 +1,6 @@
 from fastapi import Request
 
+from .auth import User
 from .exceptions import InvalidAuthException
 
 
@@ -8,12 +9,12 @@ class RoleValidator:
         self.roles = roles
 
     def __call__(self, request: Request):
-        user = getattr(request.state, "user", None)
+        user: User | None = getattr(request.state, "user", None)
 
         if user is None:
             raise InvalidAuthException("No user attached to request")
 
-        user_roles: list[str] = user.claims.get("roles", [])
+        user_roles = user.claims.get("roles")
 
         if not isinstance(user_roles, list):
             raise InvalidAuthException("Invalid formatted roles claim")

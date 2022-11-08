@@ -2,8 +2,7 @@ import logging
 import sys
 
 from app import settings
-
-from .otel import azure_monitor_handler
+from app.util.otel import azure_monitor_handler
 
 logger = logging.getLogger(__name__)
 
