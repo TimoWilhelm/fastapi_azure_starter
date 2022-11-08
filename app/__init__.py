@@ -11,6 +11,9 @@ from .limiter import limiter
 
 __all__ = ["settings", "azure_scheme", "limiter"]
 
+
+# Side effects
+
 from .util.logging import init_logging
 from .util.otel import init_azure_monitor
 

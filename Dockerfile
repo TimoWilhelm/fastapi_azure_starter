@@ -32,4 +32,4 @@ COPY ./app /app
 
 EXPOSE 8080
 
-CMD ["gunicorn", "app.main:app", "--config=./gunicorn.conf.py", "--worker-class=app.worker.HeadlessUvicornWorker", "--bind=0.0.0.0:8080"]
+CMD ["gunicorn", "app.main:app", "--config=./gunicorn.conf.py", "--bind=0.0.0.0:8080"]

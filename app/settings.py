@@ -1,7 +1,15 @@
 import multiprocessing
 from typing import Literal
 
-from pydantic import AnyHttpUrl, BaseSettings, Field, RedisDsn
+from pydantic import (
+    AnyHttpUrl,
+    BaseSettings,
+    Field,
+    RedisDsn,
+    condecimal,
+    conint,
+    constr,
+)
 
 
 class Settings(BaseSettings):
@@ -9,9 +17,11 @@ class Settings(BaseSettings):
         default=["http://localhost:8000"], env="BACKEND_CORS_ORIGINS"
     )
 
-    TENANT_ID: str = Field(..., env="TENANT_ID")
-    OPENAPI_CLIENT_ID: str = Field(..., env="OPENAPI_CLIENT_ID")
-    API_CLIENT_ID: str = Field(..., env="API_CLIENT_ID")
+    TENANT_ID: constr(strip_whitespace=True) = Field(..., env="TENANT_ID")
+    OPENAPI_CLIENT_ID: constr(strip_whitespace=True) = Field(
+        ..., env="OPENAPI_CLIENT_ID"
+    )
+    API_CLIENT_ID: constr(strip_whitespace=True) = Field(..., env="API_CLIENT_ID")
 
     REDIS_CONNECTION_STRING: RedisDsn | None = Field(env="REDIS_CONNECTION_STRING")
 
@@ -26,23 +36,19 @@ class Settings(BaseSettings):
     )
 
     # https://docs.gunicorn.org/en/stable/design.html#how-many-workers
-    WORKER_COUNT: int = Field(
+    WORKER_COUNT: conint(gt=0, le=multiprocessing.cpu_count() * 2 + 1) = Field(
         default=multiprocessing.cpu_count() * 2 + 1,
         env="WORKER_COUNT",
-        gt=0,
-        le=multiprocessing.cpu_count() * 2 + 1,
     )
 
-    APPLICATIONINSIGHTS_CONNECTION_STRING: str = Field(
+    APPLICATIONINSIGHTS_CONNECTION_STRING: constr(strip_whitespace=True) = Field(
         default="InstrumentationKey=00000000-0000-0000-0000-000000000000",
         env="APPLICATIONINSIGHTS_CONNECTION_STRING",
     )
 
-    TRACING_SAMPLER_RATE: float = Field(
+    TRACING_SAMPLER_RATE: condecimal(ge=0.0, le=1.0, decimal_places=5) = Field(
         default=1.0,
         env="TRACING_SAMPLER_RATE",
-        ge=0.0,
-        le=1.0,
     )
 
     SYSTEM_METRICS_ENABLED: bool = Field(
