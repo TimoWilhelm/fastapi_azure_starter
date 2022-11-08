@@ -1,0 +1,54 @@
+version: "3"
+
+# This file is used for local development only. It is not used in production.
+
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=main
+  redis:
+    image: redis:6
+    restart: always
+    ports:
+      - "6379:6379"
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: bash -c "alembic upgrade head && pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload"
+    volumes:
+      - ./app:/run/app
+      - ./.env:/run/.env
+    ports:
+      - "8000:8080"
+      - "5678:5678"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - REDIS_CONNECTION_STRING=redis://host.docker.internal:6379
+      - POSTGRES_CONNECTION_STRING=postgresql://postgres:postgres@postgres:5432/main
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    volumes:
+      - ./dev/servers.json:/pgadmin4/servers.json
+    depends_on:
+      - postgres
+volumes:
+  db_data:

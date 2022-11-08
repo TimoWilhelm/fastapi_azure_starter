@@ -5,6 +5,7 @@ from pydantic import (
     AnyHttpUrl,
     BaseSettings,
     Field,
+    PostgresDsn,
     RedisDsn,
     condecimal,
     conint,
@@ -23,7 +24,10 @@ class Settings(BaseSettings):
     )
     API_CLIENT_ID: constr(strip_whitespace=True) = Field(..., env="API_CLIENT_ID")
 
-    REDIS_CONNECTION_STRING: RedisDsn | None = Field(env="REDIS_CONNECTION_STRING")
+    POSTGRES_CONNECTION_STRING: PostgresDsn = Field(
+        ..., env="POSTGRES_CONNECTION_STRING"
+    )
+    REDIS_CONNECTION_STRING: RedisDsn = Field(..., env="REDIS_CONNECTION_STRING")
 
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO", env="LOG_LEVEL"

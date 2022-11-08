@@ -15,7 +15,20 @@
                 "--port=8000"
             ],
             "jinja": true,
-            "justMyCode": false,
+            "justMyCode": false
+        },
+        {
+            "name": "Python: Remote Attach",
+            "type": "python",
+            "request": "attach",
+            "port": 5678,
+            "host": "localhost",
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/run"
+                }
+            ]
         }
     ]
 }
