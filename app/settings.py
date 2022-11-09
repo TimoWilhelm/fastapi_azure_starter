@@ -14,6 +14,10 @@ from pydantic import (
 
 
 class Settings(BaseSettings):
+    ENVIRONMENT: Literal["DEVELOPMENT", "STAGING", "PRODUCTION"] = Field(
+        default="DEVELOPMENT", env="ENVIRONMENT"
+    )
+
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = Field(
         default=["http://localhost:8000"], env="BACKEND_CORS_ORIGINS"
     )

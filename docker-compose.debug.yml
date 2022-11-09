@@ -5,7 +5,7 @@ version: "3"
 services:
   postgres:
     image: postgres:15
-    restart: always
+    command: '-d 1' # set debug-level
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
@@ -15,8 +15,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=main
   redis:
-    image: redis:6
-    restart: always
+    image: redis:latest
     volumes:
       - redis:/data
     ports:
@@ -28,7 +27,8 @@ services:
     command: bash -c "alembic upgrade head && pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload"
     volumes:
       - ./app:/run/app
-      - ./.env:/run/.env
+      - ./alembic:/run/alembic
+      - ./.env:/run/.env # add local .env file to container
     ports:
       - "8000:8080"
       - "5678:5678"
@@ -36,13 +36,13 @@ services:
       - postgres
       - redis
     environment:
-      - REDIS_CONNECTION_STRING=redis://host.docker.internal:6379
+      - PYTHONDONTWRITEBYTECODE= # enable writing .pyc files for faster reloads
+      - REDIS_CONNECTION_STRING=redis://redis:6379
       - POSTGRES_CONNECTION_STRING=postgresql://postgres:postgres@postgres:5432/main
 
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
-    restart: always
     volumes:
       - pgadmin:/var/lib/pgadmin
       - ./dev/pgadmin_servers.json:/pgadmin4/servers.json
