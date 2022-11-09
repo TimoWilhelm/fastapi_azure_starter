@@ -45,7 +45,7 @@ services:
     image: dpage/pgadmin4
     volumes:
       - pgadmin:/var/lib/pgadmin
-      - ./dev/pgadmin_servers.json:/pgadmin4/servers.json
+      - ./.dev/pgadmin_servers.json:/pgadmin4/servers.json
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@pgadmin.org
       - PGADMIN_DEFAULT_PASSWORD=admin

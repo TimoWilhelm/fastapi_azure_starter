@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compose Up",
+            "type": "docker-compose",
+            "dockerCompose": {
+                "up": {
+                    "detached": true,
+                    "build": true
+                },
+                "files": [
+                    "${workspaceFolder}/docker-compose.debug.yml"
+                ]
+            }
+        },
+        {
+            "label": "Compose Down",
+            "type": "docker-compose",
+            "dockerCompose": {
+                "down": {
+                    "removeVolumes": false
+                },
+                "files": [
+                    "${workspaceFolder}/docker-compose.debug.yml"
+                ]
+            }
+        },
+    ]
+}
