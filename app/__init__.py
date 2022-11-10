@@ -2,10 +2,9 @@
 from .settings import settings  # noqa isort:skip
 
 from .azure_scheme import azure_scheme
-from .database import get_db
 from .limiter import limiter
 
-__all__ = ["settings", "get_db", "azure_scheme", "limiter"]
+__all__ = ["settings", "azure_scheme", "limiter"]
 
 
 # Side effects

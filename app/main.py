@@ -12,7 +12,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from app import azure_scheme, limiter, settings
 from app.middleware import UncaughtExceptionHandlerMiddleware
 from app.responses import default_responses
-from app.routers import users
+from app.routers import samples, users
 from app.util.logging import UvicornLoggingFilter
 
 logger = logging.getLogger(__name__)
@@ -58,6 +58,12 @@ app.include_router(
         Security(azure_scheme, scopes=["user_impersonation"]),
     ],
     responses={**default_responses},
+)
+
+app.include_router(
+    samples.router,
+    prefix="/samples",
+    tags=["samples"],
 )
 
 

@@ -42,7 +42,7 @@ WORKDIR /run
 
 COPY gunicorn.conf.py .
 COPY alembic.ini .
-COPY ./alembic ./alembic
+COPY ./migrations ./migrations
 COPY ./app ./app
 
 # Creates a non-root user with an explicit UID and adds permission to access the /run folder

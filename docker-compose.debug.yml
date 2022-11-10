@@ -27,7 +27,7 @@ services:
     command: bash -c "alembic upgrade head && pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload"
     volumes:
       - ./app:/run/app
-      - ./alembic:/run/alembic
+      - ./migrations:/run/migrations
       - ./.env:/run/.env # add local .env file to container
     ports:
       - "8000:8080"
@@ -38,7 +38,7 @@ services:
     environment:
       - PYTHONDONTWRITEBYTECODE= # enable writing .pyc files for faster reloads
       - REDIS_CONNECTION_STRING=redis://redis:6379
-      - POSTGRES_CONNECTION_STRING=postgresql://postgres:postgres@postgres:5432/main
+      - POSTGRES_CONNECTION_STRING=postgresql+asyncpg://postgres:postgres@postgres:5432/main
 
   pgadmin:
     container_name: pgadmin

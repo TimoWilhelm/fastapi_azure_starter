@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from app import limiter
 from app.packages.auth import User
-from app.packages.auth.dependencies import RoleValidator
+from app.packages.auth.dependencies import RoleValidator, get_required_user
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +30,9 @@ class Greeting(BaseModel):
     },
 )
 @limiter.limit("10/minute")
-async def get_greeting(request: Request, response: Response):
-    user: User = request.state.user
+async def get_greeting(
+    request: Request, response: Response, user: User = Depends(get_required_user)
+):
     logger.info(f"User {user.claims.get('oid')} is requesting a greeting.")
     return Greeting(greeting=f"Hello {user.claims.get('name')}!")
 

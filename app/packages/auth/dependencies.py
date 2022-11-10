@@ -4,6 +4,18 @@ from .auth import User
 from .exceptions import InvalidAuthException
 
 
+def get_user(request: Request):
+    user: User | None = getattr(request.state, "user", None)
+    return user
+
+
+def get_required_user(request: Request):
+    user: User | None = getattr(request.state, "user", None)
+    if user is None:
+        raise InvalidAuthException("User is required")
+    return user
+
+
 class RoleValidator:
     def __init__(self, roles: list[str]):
         self.roles = roles

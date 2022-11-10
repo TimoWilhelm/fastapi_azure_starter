@@ -5,18 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: FastAPI",
-            "type": "python",
-            "request": "launch",
-            "module": "uvicorn",
-            "args": [
-                "app.main:app",
-                "--reload",
-                "--port=8000"
-            ],
-            "justMyCode": false
-        },
-        {
             "name": "Python: Remote Attach",
             "type": "python",
             "request": "attach",
@@ -33,7 +21,18 @@
                 },
             ],
             "justMyCode": false,
-            "preLaunchTask": "Compose Up",
-        }
+        },
+        {
+            "name": "Python: FastAPI",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.main:app",
+                "--reload",
+                "--port=8000"
+            ],
+            "justMyCode": false,
+        },
     ]
 }
