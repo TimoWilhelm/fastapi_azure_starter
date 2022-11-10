@@ -2,11 +2,11 @@
 
 This repository is a batteries included starter project template for the FastAPI framework with the following features:
 
-- Multi-worker hosting
-- Azure AD OpenID Connect user authentication and role-based authorization
-- OpenTelemetry monitoring with Azure Application Insights integration
-- Rate limiting
-- SQL Database integration
+- Multi-worker hosting with [Gunicorn](https://docs.gunicorn.org)
+- [Azure AD OpenID Connect](https://learn.microsoft.com/azure/active-directory/fundamentals/auth-oidc) user authentication and role-based authorization
+- [OpenTelemetry](https://opentelemetry.io/) monitoring with Azure Application Insights integration
+- Rate limiting with [SlowApi](https://slowapi.readthedocs.io/en/latest/)
+- SQL Database integration with [SQLAlchemy](https://www.sqlalchemy.org/) and [asyncpg](https://github.com/MagicStack/asyncpg)
 - Docker container packaging
 
 # Requirements:
