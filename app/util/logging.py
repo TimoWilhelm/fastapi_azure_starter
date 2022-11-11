@@ -8,11 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 def init_logging():
-    # messages lower than WARNING go to stdout
+    # messages < WARNING go to stdout
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.addFilter(MaxLevelFilter(logging.WARNING))
 
-    # messages >= WARNING ( and >= STDOUT_LOG_LEVEL ) go to stderr
+    # messages >= WARNING go to stderr
     stderr_handler = logging.StreamHandler(sys.stderr)
     stderr_handler.setLevel(logging.WARNING)
 
@@ -22,23 +22,20 @@ def init_logging():
         azure_monitor_handler,
     ]
 
-    for handler in handlers:
-        handler.addFilter(DependenciesLoggingFilter())
-
     logging.basicConfig(
         force=True,
-        level=settings.LOG_LEVEL,
+        level=settings.DEFAULT_LOG_LEVEL,
         handlers=handlers,
-        format="[%(levelname)s] [%(asctime)s] [%(process)d] %(message)s",
+        format="[%(levelname)s] [%(asctime)s] [%(process)d] [%(name)s] %(message)s",
     )
 
-    uvicorn_error_logger = logging.getLogger("uvicorn.error")
-    uvicorn_error_logger.setLevel(settings.LOG_LEVEL)
-    uvicorn_error_logger.handlers = handlers
+    for key, value in settings.LOG_CONFIG.items():
+        logging.getLogger(key).setLevel(value)
 
-    uvicorn_access_logger = logging.getLogger("uvicorn.access")
-    uvicorn_access_logger.setLevel(settings.LOG_LEVEL)
-    uvicorn_access_logger.handlers = handlers
+    # since uvicorn logging is configured before this function is called,
+    # we need to overwrite the handlers.
+    logging.getLogger("uvicorn").handlers = handlers
+    logging.getLogger("uvicorn.access").handlers = handlers
 
 
 class MaxLevelFilter(logging.Filter):
@@ -49,22 +46,6 @@ class MaxLevelFilter(logging.Filter):
 
     def filter(self, record):
         return record.levelno < self.level
-
-
-class DependenciesLoggingFilter(logging.Filter):
-    def __init__(self):
-        super().__init__()
-        self.dependencies_log_level = logging._nameToLevel[
-            settings.DEPENDENCIES_LOG_LEVEL
-        ]
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        if (
-            not record.name.startswith("app")
-            and record.levelno < self.dependencies_log_level
-        ):
-            return False
-        return True
 
 
 class UvicornLoggingFilter(logging.Filter):

@@ -64,6 +64,10 @@ app.include_router(
     samples.router,
     prefix="/samples",
     tags=["samples"],
+    dependencies=[
+        Security(azure_scheme, scopes=["user_impersonation"]),
+    ],
+    responses={**default_responses},
 )
 
 

@@ -1,5 +1,3 @@
-import logging
-
 from azure.monitor.opentelemetry.exporter import (
     AzureMonitorLogExporter,
     AzureMonitorMetricExporter,
@@ -48,7 +46,6 @@ _log_emitter_provider = LoggerProvider()
 _log_emitter_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
 
 azure_monitor_handler = LoggingHandler(
-    level=logging._nameToLevel[settings.LOG_LEVEL],
     logger_provider=_log_emitter_provider,
 )
 

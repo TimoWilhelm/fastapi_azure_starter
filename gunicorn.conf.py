@@ -2,7 +2,7 @@ from app import settings
 
 # https://docs.gunicorn.org/en/stable/settings.html
 
-loglevel = settings.LOG_LEVEL.lower()
+loglevel = settings.GUNICORN_LOG_LEVEL.lower()
 errorlog = "-"  # stderr
 accesslog = "-"  # stdout
 

@@ -12,6 +12,8 @@ from pydantic import (
     constr,
 )
 
+LOG_LEVELS = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+
 
 class Settings(BaseSettings):
     ENVIRONMENT: Literal["DEVELOPMENT", "STAGING", "PRODUCTION"] = Field(
@@ -33,14 +35,18 @@ class Settings(BaseSettings):
     )
     REDIS_CONNECTION_STRING: RedisDsn = Field(..., env="REDIS_CONNECTION_STRING")
 
-    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
-        default="INFO", env="LOG_LEVEL"
-    )
-    DEPENDENCIES_LOG_LEVEL: Literal[
-        "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
-    ] = Field(
-        default="WARNING",
-        env="DEPENDENCIES_LOG_LEVEL",
+    GUNICORN_LOG_LEVEL: LOG_LEVELS = Field(default="INFO", env="GUNICORN_LOG_LEVEL")
+    DEFAULT_LOG_LEVEL: LOG_LEVELS = Field(default="WARNING", env="DEFAULT_LOG_LEVEL")
+    LOG_CONFIG: dict[str, LOG_LEVELS] = Field(
+        default={
+            "app": "INFO",
+            "uvicorn.access": "INFO",
+            "uvicorn.error": "INFO",
+            "sqlalchemy.engine": "WARNING",
+            "sqlalchemy.pool": "WARNING",
+            "sqlalchemy.orm": "WARNING",
+        },
+        env="LOG_CONFIG",
     )
 
     # https://docs.gunicorn.org/en/stable/design.html#how-many-workers
@@ -67,6 +73,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        env_nested_delimiter = "__"
         case_sensitive = True
 
 

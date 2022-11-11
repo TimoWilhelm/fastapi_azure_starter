@@ -6,7 +6,7 @@ This repository is a batteries included starter project template for the FastAPI
 - [Azure AD OpenID Connect](https://learn.microsoft.com/azure/active-directory/fundamentals/auth-oidc) user authentication and role-based authorization
 - [OpenTelemetry](https://opentelemetry.io/) monitoring with Azure Application Insights integration
 - Rate limiting with [SlowApi](https://slowapi.readthedocs.io/en/latest/)
-- SQL Database integration with [SQLAlchemy](https://www.sqlalchemy.org/) and [asyncpg](https://github.com/MagicStack/asyncpg)
+- SQL Database integration with [SQLAlchemy 2.0](https://www.sqlalchemy.org/) and [asyncpg](https://github.com/MagicStack/asyncpg)
 - Docker container packaging
 
 # Requirements:
