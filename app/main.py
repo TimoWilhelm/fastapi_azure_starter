@@ -16,9 +16,7 @@ from app.middleware import UncaughtExceptionHandlerMiddleware
 from app.responses import default_responses
 from app.routers import samples, users
 from app.telemetry.logging import UvicornLoggingFilter, init_logging
-from app.telemetry.otel import patch_all
-
-patch_all()
+from app.telemetry.otel import patch_otel
 
 init_logging()
 
@@ -30,6 +28,8 @@ uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/oauth2-redirect"))
 
 
 settings = get_settings()
+
+patch_otel(enable_system_metrics=settings.SYSTEM_METRICS_ENABLED)
 
 if settings.APPLICATIONINSIGHTS_CONNECTION_STRING is not None:
     # setup opentelemetry exporter

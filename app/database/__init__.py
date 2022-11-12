@@ -37,6 +37,6 @@ def session_factory(connection_string: str):
 
 
 async def get_db(settings: Settings = Depends(get_settings)):
-    async_session = session_factory(settings.POSTGRES_CONNECTION_STRING)
-    async with async_session() as session:
+    create_async_session = session_factory(settings.POSTGRES_CONNECTION_STRING)
+    async with create_async_session() as session:
         yield session

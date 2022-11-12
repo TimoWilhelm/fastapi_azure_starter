@@ -5,9 +5,11 @@ from opentelemetry.instrumentation.redis import RedisInstrumentor
 from opentelemetry.instrumentation.system_metrics import SystemMetricsInstrumentor
 
 
-def patch_all():
+def patch_otel(enable_system_metrics=False):
     LoggingInstrumentor().instrument()
     HTTPXClientInstrumentor().instrument()
     RedisInstrumentor().instrument()
     AsyncPGInstrumentor().instrument()
-    SystemMetricsInstrumentor().instrument()
+
+    if enable_system_metrics:
+        SystemMetricsInstrumentor().instrument()
