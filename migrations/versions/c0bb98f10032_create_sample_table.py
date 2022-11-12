@@ -1,15 +1,15 @@
 """Create Sample Table
 
-Revision ID: 927c6a520d34
+Revision ID: c0bb98f10032
 Revises:
-Create Date: 2022-11-10 17:38:22.995342
+Create Date: 2022-11-12 11:21:24.288392
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "927c6a520d34"
+revision = "c0bb98f10032"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -20,8 +20,9 @@ def upgrade() -> None:
     op.create_table(
         "sample",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("name", sa.String(length=10), nullable=True),
-        sa.Column("description", sa.String(length=100), nullable=True),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("description", sa.String(), nullable=True),
+        sa.Column("create_date", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_sample_id"), "sample", ["id"], unique=False)

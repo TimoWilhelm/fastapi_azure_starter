@@ -21,7 +21,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/), install t
 # Setup
 
 Run the [Setup Script](./scripts/Setup-Dependencies.ps1) to install the project dependencies.
-This will also create a Python virtual environment you can activate using the `activate` script for your shell in the [venv scripts](./.venv/scripts/) folder.
+This will also create a Python virtual environment you can activate using the `activate` scripts in the [venv scripts](./.venv/scripts/) folder.
 
 > Make sure to update your editor settings to use the virtual environment to enable linting and autoformatting!
 

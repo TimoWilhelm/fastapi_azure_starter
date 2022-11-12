@@ -49,7 +49,7 @@ async def create_sample(
     return await sample_service.create(sample)
 
 
-@router.put(
+@router.patch(
     "/{id}",
     response_model=Sample,
 )
