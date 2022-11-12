@@ -9,17 +9,35 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from app import azure_scheme, limiter, settings
+from app.azure_scheme import get_azure_scheme
+from app.config import get_settings
+from app.limiter import limiter
 from app.middleware import UncaughtExceptionHandlerMiddleware
 from app.responses import default_responses
 from app.routers import samples, users
-from app.util.logging import UvicornLoggingFilter
+from app.telemetry.logging import UvicornLoggingFilter, init_logging
+from app.telemetry.otel import patch_all
+
+patch_all()
+
+init_logging()
 
 logger = logging.getLogger(__name__)
 
 uvicorn_access_logger = logging.getLogger("uvicorn.access")
 uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
 uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/oauth2-redirect"))
+
+
+settings = get_settings()
+
+if settings.APPLICATIONINSIGHTS_CONNECTION_STRING is not None:
+    # setup opentelemetry exporter
+    from .telemetry.azure_monitor import init_azure_monitor
+
+    init_azure_monitor()
+
+azure_scheme = get_azure_scheme(settings.TENANT_ID, settings.API_CLIENT_ID)
 
 app = FastAPI(
     title="Hello World",

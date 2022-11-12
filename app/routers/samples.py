@@ -44,7 +44,6 @@ async def create_sample(
     response: Response,
     sample: SampleCreate,
     sample_service: SampleService = Depends(get_sample_service),
-    # response_model=Sample,
 ):
     return await sample_service.create(sample)
 
@@ -59,7 +58,6 @@ async def update_sample(
     id: int,
     sample: SampleUpdate,
     sample_service: SampleService = Depends(get_sample_service),
-    # response_model=Sample,
 ):
     return await sample_service.update(id, sample)
 

@@ -6,7 +6,8 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app import database, settings
+from app.config import get_settings
+from app.database import Base
 
 # import all tables for 'autogenerate' support
 from app.database.tables import *  # noqa: F401, F403
@@ -22,7 +23,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-target_metadata = database.Base.metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -42,7 +43,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = settings.POSTGRES_CONNECTION_STRING
+    url = get_settings().POSTGRES_CONNECTION_STRING
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -69,7 +70,7 @@ async def run_migrations_online() -> None:
 
     """
     connectable = create_async_engine(
-        settings.POSTGRES_CONNECTION_STRING, poolclass=pool.NullPool
+        get_settings().POSTGRES_CONNECTION_STRING, poolclass=pool.NullPool
     )
 
     async with connectable.connect() as connection:

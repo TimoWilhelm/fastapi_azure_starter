@@ -53,4 +53,5 @@ profile = "black"
 reportGeneralTypeIssues = false
 
 [tool.coverage.run]
-source = ["./app"]
+source = ["app"]
+omit = ["app/gunicorn_worker.py"]

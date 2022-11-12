@@ -1,8 +1,8 @@
 import logging
 import sys
 
-from app import settings
-from app.util.otel import azure_monitor_handler
+from app.config import get_settings
+from app.telemetry.azure_monitor import azure_monitor_handler
 
 logger = logging.getLogger(__name__)
 
@@ -19,17 +19,19 @@ def init_logging():
     handlers: list[logging.Handler] = [
         stdout_handler,
         stderr_handler,
-        azure_monitor_handler,
     ]
+
+    if azure_monitor_handler is not None:  # pragma: NO COVER
+        handlers.append(azure_monitor_handler)
 
     logging.basicConfig(
         force=True,
-        level=settings.DEFAULT_LOG_LEVEL,
+        level=get_settings().DEFAULT_LOG_LEVEL,
         handlers=handlers,
         format="[%(levelname)s] [%(asctime)s] [%(process)d] [%(name)s] %(message)s",
     )
 
-    for key, value in settings.LOG_CONFIG.items():
+    for key, value in get_settings().LOG_CONFIG.items():
         logging.getLogger(key).setLevel(value)
 
     # since uvicorn logging is configured before this function is called,

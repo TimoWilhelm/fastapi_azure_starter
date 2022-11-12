@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, Request, Response, status
 from pydantic import BaseModel
 
-from app import limiter
+from app.limiter import limiter
 from app.packages.auth import User
 from app.packages.auth.dependencies import RoleValidator, get_required_user
 

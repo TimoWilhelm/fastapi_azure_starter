@@ -1,4 +1,5 @@
 import multiprocessing
+from functools import cache
 from typing import Literal
 
 from pydantic import (
@@ -33,7 +34,7 @@ class Settings(BaseSettings):
     POSTGRES_CONNECTION_STRING: PostgresDsn = Field(
         ..., env="POSTGRES_CONNECTION_STRING"
     )
-    REDIS_CONNECTION_STRING: RedisDsn = Field(..., env="REDIS_CONNECTION_STRING")
+    REDIS_CONNECTION_STRING: RedisDsn | None = Field(env="REDIS_CONNECTION_STRING")
 
     GUNICORN_LOG_LEVEL: LOG_LEVELS = Field(default="INFO", env="GUNICORN_LOG_LEVEL")
     DEFAULT_LOG_LEVEL: LOG_LEVELS = Field(default="WARNING", env="DEFAULT_LOG_LEVEL")
@@ -55,8 +56,7 @@ class Settings(BaseSettings):
         env="WORKER_COUNT",
     )
 
-    APPLICATIONINSIGHTS_CONNECTION_STRING: constr(strip_whitespace=True) = Field(
-        default="InstrumentationKey=00000000-0000-0000-0000-000000000000",
+    APPLICATIONINSIGHTS_CONNECTION_STRING: constr(strip_whitespace=True) | None = Field(
         env="APPLICATIONINSIGHTS_CONNECTION_STRING",
     )
 
@@ -75,6 +75,9 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         env_nested_delimiter = "__"
         case_sensitive = True
+        allow_mutation = False
 
 
-settings = Settings()  # pyright: ignore[reportGeneralTypeIssues]
+@cache
+def get_settings():
+    return Settings()

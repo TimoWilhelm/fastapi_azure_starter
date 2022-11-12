@@ -1,7 +1,7 @@
 from fastapi import Request
 from slowapi import Limiter
 
-from app import settings
+from app.config import get_settings
 from app.packages.auth import User
 
 
@@ -18,6 +18,8 @@ def key_func(request: Request) -> str:
 
     return ""
 
+
+settings = get_settings()
 
 limiter = Limiter(
     key_func=key_func,
