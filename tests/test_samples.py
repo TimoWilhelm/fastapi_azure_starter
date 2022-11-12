@@ -1,28 +1,22 @@
 import unittest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 from fastapi import status
-from fastapi.testclient import TestClient
 
 from app.database.tables.sample_table import SampleTable
 from app.repositories.sample_repository import SampleRepository, get_sample_repository
-from tests._helper.security import MockSecurity
-from tests._helper.settings import base_mock_settings
+from tests._helper.client import setup_test_client
 
 
 class TestSamples(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with patch("app.config.get_settings", return_value=base_mock_settings), patch(
-            "app.azure_scheme.get_azure_scheme", return_value=MockSecurity
-        ):
-            from app.main import app
-
-            cls.mock_sample_repository = AsyncMock(SampleRepository)
-            app.dependency_overrides = {
+        cls.mock_sample_repository = AsyncMock(SampleRepository)
+        cls.client = setup_test_client(
+            {
                 get_sample_repository: lambda: cls.mock_sample_repository,
             }
-            cls.client = TestClient(app)
+        )
 
     def tearDown(self):
         self.mock_sample_repository.reset_mock()

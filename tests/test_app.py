@@ -1,22 +1,14 @@
 import unittest
-from unittest.mock import patch
 
 from fastapi import status
-from fastapi.testclient import TestClient
 
-from tests._helper.security import MockSecurity
-from tests._helper.settings import base_mock_settings
+from tests._helper.client import setup_test_client
 
 
 class TestApp(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with patch("app.config.get_settings", return_value=base_mock_settings), patch(
-            "app.azure_scheme.get_azure_scheme", return_value=MockSecurity
-        ):
-            from app.main import app
-
-            cls.client = TestClient(app)
+        cls.client = setup_test_client()
 
     def test_get_root(self):
         response = self.client.get("/", allow_redirects=False)
