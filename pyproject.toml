@@ -36,6 +36,7 @@ flake8 = "^5.0.4"
 isort = "^5.10.1"
 flake8-bugbear = "^22.10.27"
 pre-commit = "^2.20.0"
+coverage = "^6.5.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -50,3 +51,6 @@ profile = "black"
 
 [tool.pyright]
 reportGeneralTypeIssues = false
+
+[tool.coverage.run]
+source = ["./app"]
