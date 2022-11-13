@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import (
     AnyHttpUrl,
+    BaseConfig,
     BaseSettings,
     Field,
     PostgresDsn,
@@ -17,6 +18,13 @@ LOG_LEVELS = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
 class Settings(BaseSettings):
+    class Config(BaseConfig):
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        env_nested_delimiter = "__"
+        case_sensitive = True
+        allow_mutation = False
+
     ENVIRONMENT: Literal["DEVELOPMENT", "STAGING", "PRODUCTION"] = Field(
         default="DEVELOPMENT", env="ENVIRONMENT"
     )
@@ -69,13 +77,6 @@ class Settings(BaseSettings):
         default=False,
         env="SYSTEM_METRICS_ENABLED",
     )
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        env_nested_delimiter = "__"
-        case_sensitive = True
-        allow_mutation = False
 
 
 @cache

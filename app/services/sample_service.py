@@ -2,7 +2,8 @@ from fastapi import Depends, HTTPException
 
 from app.database.tables import SampleTable
 from app.models.sample import SampleCreate, SampleUpdate
-from app.repositories.sample_repository import SampleRepository, get_sample_repository
+from app.repositories import get_repository
+from app.repositories.sample_repository import SampleRepository
 
 
 class SampleService:
@@ -38,6 +39,6 @@ class SampleService:
 
 
 def get_sample_service(
-    sample_repo: SampleRepository = Depends(get_sample_repository),
+    sample_repo: SampleRepository = Depends(get_repository(SampleRepository)),
 ):
     return SampleService(sample_repo)

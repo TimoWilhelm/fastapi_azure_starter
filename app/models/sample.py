@@ -1,6 +1,6 @@
 from pydantic import BaseModel, constr
 
-from app.models.meta import AllOptional
+from app.models._meta import AllOptional
 
 
 class SampleBase(BaseModel):

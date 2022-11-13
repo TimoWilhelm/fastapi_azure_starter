@@ -11,5 +11,5 @@ def patch_otel(enable_system_metrics=False):
     RedisInstrumentor().instrument()
     AsyncPGInstrumentor().instrument()
 
-    if enable_system_metrics:
+    if enable_system_metrics:  # pragma: NO COVER
         SystemMetricsInstrumentor().instrument()

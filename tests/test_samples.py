@@ -4,7 +4,8 @@ from unittest.mock import AsyncMock
 from fastapi import status
 
 from app.database.tables.sample_table import SampleTable
-from app.repositories.sample_repository import SampleRepository, get_sample_repository
+from app.repositories import get_repository
+from app.repositories.sample_repository import SampleRepository
 from tests._helper.client import setup_test_client
 
 
@@ -14,7 +15,7 @@ class TestSamples(unittest.TestCase):
         cls.mock_sample_repository = AsyncMock(SampleRepository)
         cls.client = setup_test_client(
             {
-                get_sample_repository: lambda: cls.mock_sample_repository,
+                get_repository(SampleRepository): lambda: cls.mock_sample_repository,
             }
         )
 

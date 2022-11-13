@@ -3,6 +3,7 @@
         "editor.formatOnSave": true,
         "editor.formatOnPaste": false // black does not support formatting sections of code.
     },
+    "python.envFile": "__placeholder_disable_env_file__", // we use pydantic settings to load env variables
     "python.analysis.typeCheckingMode": "basic",
     "python.formatting.provider": "black",
     "python.linting.enabled": true,

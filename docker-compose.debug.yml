@@ -14,12 +14,14 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=main
+
   redis:
     image: redis:latest
     volumes:
       - redis:/data
     ports:
       - "6379:6379"
+
   app:
     build:
       context: .
@@ -53,6 +55,7 @@ services:
       - "5050:80"
     depends_on:
       - postgres
+
 volumes:
   db_data:
   redis:
