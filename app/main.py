@@ -9,16 +9,12 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from app.azure_scheme import get_azure_scheme
+from app.azure_scheme import AzureScheme
 from app.config import get_settings
-from app.limiter import limiter
+from app.limiter import RateLimit
 from app.middleware import UncaughtExceptionHandlerMiddleware
 from app.responses import default_responses
-from app.routers import samples, users
 from app.telemetry.logging import UvicornLoggingFilter, init_logging
-from app.telemetry.otel import patch_otel
-
-init_logging()
 
 logger = logging.getLogger(__name__)
 
@@ -29,15 +25,7 @@ uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/oauth2-redirect"))
 
 settings = get_settings()
 
-patch_otel(enable_system_metrics=settings.SYSTEM_METRICS_ENABLED)
-
-if settings.APPLICATIONINSIGHTS_CONNECTION_STRING is not None:
-    # setup opentelemetry exporter
-    from .telemetry.azure_monitor import init_azure_monitor
-
-    init_azure_monitor()
-
-azure_scheme = get_azure_scheme(settings.TENANT_ID, settings.API_CLIENT_ID)
+init_logging(settings.DEFAULT_LOG_LEVEL, settings.LOG_CONFIG)
 
 app = FastAPI(
     title="Hello World",
@@ -52,12 +40,17 @@ app = FastAPI(
 
 FastAPIInstrumentor.instrument_app(app, excluded_urls="health,oauth2-redirect")
 
+
 app.add_middleware(ProxyHeadersMiddleware)
 app.add_middleware(UncaughtExceptionHandlerMiddleware)
 
+AzureScheme.init(settings.TENANT_ID, settings.API_CLIENT_ID)
+
+limiter = RateLimit.init(settings.REDIS_CONNECTION_STRING)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+
 
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
@@ -68,30 +61,10 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.include_router(
-    users.router,
-    prefix="/users",
-    tags=["users"],
-    dependencies=[
-        Security(azure_scheme, scopes=["user_impersonation"]),
-    ],
-    responses={**default_responses},
-)
-
-app.include_router(
-    samples.router,
-    prefix="/samples",
-    tags=["samples"],
-    dependencies=[
-        Security(azure_scheme, scopes=["user_impersonation"]),
-    ],
-    responses={**default_responses},
-)
-
 
 @app.on_event("startup")
-async def init_auth() -> None:
-    await azure_scheme.init()
+async def load_auth_config() -> None:
+    await AzureScheme.instance().load_config()
 
 
 @app.get("/", include_in_schema=False)
@@ -107,3 +80,30 @@ def health(request: Request, response: Response):
 @app.get("/error")
 async def get_error(request: Request, response: Response):
     raise Exception("This is an error")
+
+
+def add_routers():
+    from app.routers import samples, users
+
+    app.include_router(
+        users.router,
+        prefix="/users",
+        tags=["users"],
+        dependencies=[
+            Security(AzureScheme.instance(), scopes=["user_impersonation"]),
+        ],
+        responses={**default_responses},
+    )
+
+    app.include_router(
+        samples.router,
+        prefix="/samples",
+        tags=["samples"],
+        dependencies=[
+            Security(AzureScheme.instance(), scopes=["user_impersonation"]),
+        ],
+        responses={**default_responses},
+    )
+
+
+add_routers()

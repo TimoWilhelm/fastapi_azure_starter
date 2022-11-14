@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, Request, Response, status
 from pydantic import BaseModel
 
-from app.limiter import limiter
+from app.limiter import RateLimit
 from app.packages.auth import User
 from app.packages.auth.dependencies import RoleValidator, get_required_user
 
@@ -29,7 +29,7 @@ class Greeting(BaseModel):
         },
     },
 )
-@limiter.limit("10/minute")
+@RateLimit.instance().limit("10/minute")
 async def get_greeting(
     request: Request, response: Response, user: User = Depends(get_required_user)
 ):

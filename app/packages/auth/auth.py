@@ -109,7 +109,7 @@ class OidcAuthorizationCodeBearer(SecurityBase):
 
         return payload
 
-    async def init(self):
+    async def load_config(self):
         await self.openid_config.load_config()
 
         self._oauth = FastApiOAuth2AuthorizationCodeBearer(

@@ -1,11 +1,12 @@
+from functools import cache
+
 from fastapi import Request
 from slowapi import Limiter
 
-from app.config import get_settings
 from app.packages.auth import User
 
 
-def key_func(request: Request) -> str:
+def _key_func(request: Request) -> str:
     user: User | None = getattr(request.state, "user", None)
 
     if user is not None:
@@ -19,11 +20,25 @@ def key_func(request: Request) -> str:
     return ""
 
 
-settings = get_settings()
+class RateLimit:
+    _limiter: Limiter | None = None
 
-limiter = Limiter(
-    key_func=key_func,
-    default_limits=["100/minute"],
-    headers_enabled=True,
-    storage_uri=settings.REDIS_CONNECTION_STRING or "memory://",
-)
+    @classmethod
+    def init(
+        cls, redis_connection_string: str | None, default_limit: str = "100/minute"
+    ):
+        cls._limiter = Limiter(
+            key_func=_key_func,
+            default_limits=[default_limit],
+            headers_enabled=True,
+            storage_uri=redis_connection_string or "memory://",
+        )
+
+        return cls._limiter
+
+    @classmethod
+    @cache
+    def instance(cls):
+        if cls._limiter is None:  # pragma: no cover
+            raise RuntimeError("RateLimit not initialized")
+        return cls._limiter

@@ -1,13 +1,12 @@
 import logging
 import sys
 
-from app.config import get_settings
-from app.telemetry.azure_monitor import azure_monitor_handler
+from app.telemetry.azure_monitor import AzureMonitor
 
 logger = logging.getLogger(__name__)
 
 
-def init_logging():
+def init_logging(default_level=logging.INFO, log_config: dict[str, str] = None):
     # messages < WARNING go to stdout
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.addFilter(MaxLevelFilter(logging.WARNING))
@@ -19,20 +18,19 @@ def init_logging():
     handlers: list[logging.Handler] = [
         stdout_handler,
         stderr_handler,
+        AzureMonitor.azure_monitor_log_handler,
     ]
-
-    if azure_monitor_handler is not None:  # pragma: NO COVER
-        handlers.append(azure_monitor_handler)
 
     logging.basicConfig(
         force=True,
-        level=get_settings().DEFAULT_LOG_LEVEL,
+        level=default_level,
         handlers=handlers,
         format="[%(levelname)s] [%(asctime)s] [%(process)d] [%(name)s] %(message)s",
     )
 
-    for key, value in get_settings().LOG_CONFIG.items():
-        logging.getLogger(key).setLevel(value)
+    if log_config is not None:
+        for key, value in log_config.items():
+            logging.getLogger(key).setLevel(value)
 
     # since uvicorn logging is configured before this function is called,
     # we need to overwrite the handlers.

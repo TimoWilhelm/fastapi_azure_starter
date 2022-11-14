@@ -35,6 +35,8 @@
             "justMyCode": false,
         },
         {
+            // This configuration is used by the vscode-python extension when debugging tests.
+            // https://github.com/microsoft/vscode-python/issues/7131#issuecomment-525873210
             "name": "Debug Unit Test",
             "type": "python",
             "request": "test",
