@@ -2,9 +2,9 @@ from app.config import get_settings
 from app.telemetry.azure_monitor import AzureMonitor
 from app.telemetry.otel import patch_otel
 
-settings = get_settings()
-
 # https://docs.gunicorn.org/en/stable/settings.html
+
+settings = get_settings()
 
 loglevel = settings.GUNICORN_LOG_LEVEL.lower()
 errorlog = "-"  # stderr

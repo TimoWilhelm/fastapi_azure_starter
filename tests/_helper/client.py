@@ -1,5 +1,5 @@
 from typing import Any, Callable
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -11,7 +11,9 @@ def setup_test_client(
     dependency_overrides: dict[Callable[..., Any], Callable[..., Any]] = {}
 ):
     with patch("app.config.get_settings", return_value=base_mock_settings), patch(
-        "app.azure_scheme.get_azure_scheme", return_value=MockSecurity
+        "app.azure_scheme.AzureScheme.instance",
+        new_callable=PropertyMock,
+        return_value=MockSecurity,
     ):
         from app.main import app
 

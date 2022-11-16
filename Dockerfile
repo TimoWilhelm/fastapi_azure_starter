@@ -40,9 +40,10 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /run
 
-COPY gunicorn.conf.py .
 COPY alembic.ini .
 COPY ./migrations ./migrations
+
+COPY gunicorn.conf.py .
 COPY ./app ./app
 
 # Creates a non-root user with an explicit UID and adds permission to access the /run folder

@@ -30,15 +30,17 @@ This will also create a Python virtual environment you can activate using the `a
 Update or create an [./.env](.env) file containing your local environment settings.
 
 The following settings are required to start the application.
+
 ```env
 TENANT_ID= # Your Azure AD Tenant ID
 API_CLIENT_ID= # The Azure AD Application ID used by your API
 OPENAPI_CLIENT_ID= # The Azure AD Application ID used by the OpenAPI frontend 
 ```
 
-You can find additional configuration options in the [Settings](./app/settings.py) file.
+You can find additional configuration options in the [config.py](./app/config.py) file.
 
 Run the following docker command or use the [tasks](./.vscode/tasks.json) to setup your local docker environment.
+
 ```bash
 docker compose -f docker-compose.debug.yml up -d
 ```

@@ -22,7 +22,6 @@ uvicorn_access_logger = logging.getLogger("uvicorn.access")
 uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/health", method="GET"))
 uvicorn_access_logger.addFilter(UvicornLoggingFilter(path="/oauth2-redirect"))
 
-
 settings = get_settings()
 
 init_logging(settings.DEFAULT_LOG_LEVEL, settings.LOG_CONFIG)
@@ -64,7 +63,7 @@ if settings.BACKEND_CORS_ORIGINS:
 
 @app.on_event("startup")
 async def load_auth_config() -> None:
-    await AzureScheme.instance().load_config()
+    await AzureScheme.instance.load_config()
 
 
 @app.get("/", include_in_schema=False)
@@ -90,7 +89,7 @@ def add_routers():
         prefix="/users",
         tags=["users"],
         dependencies=[
-            Security(AzureScheme.instance(), scopes=["user_impersonation"]),
+            Security(AzureScheme.instance, scopes=["user_impersonation"]),
         ],
         responses={**default_responses},
     )
@@ -100,7 +99,7 @@ def add_routers():
         prefix="/samples",
         tags=["samples"],
         dependencies=[
-            Security(AzureScheme.instance(), scopes=["user_impersonation"]),
+            Security(AzureScheme.instance, scopes=["user_impersonation"]),
         ],
         responses={**default_responses},
     )

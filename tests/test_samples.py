@@ -32,11 +32,11 @@ class TestSamples(unittest.TestCase):
         response = self.client.get("/samples")
 
         # Assert
-        self.mock_sample_repository.get.assert_called_once()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.json(), [{"id": 1, "name": "test1", "description": None}]
         )
+        self.mock_sample_repository.get.assert_called_once()
 
     def test_get_sample_by_id(self):
         # Arrange
@@ -48,8 +48,8 @@ class TestSamples(unittest.TestCase):
         response = self.client.get("/samples/1")
 
         # Assert
-        self.mock_sample_repository.get_by_id.assert_called_once_with(1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.json(), {"id": 1, "name": "test1", "description": None}
         )
+        self.mock_sample_repository.get_by_id.assert_called_once_with(1)

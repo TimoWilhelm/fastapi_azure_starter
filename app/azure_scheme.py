@@ -19,6 +19,7 @@ class AzureScheme:
         )
 
     @classmethod
+    @property
     @cache
     def instance(cls):
         if cls._scheme is None:  # pragma: no cover

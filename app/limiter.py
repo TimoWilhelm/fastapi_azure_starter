@@ -37,6 +37,7 @@ class RateLimit:
         return cls._limiter
 
     @classmethod
+    @property
     @cache
     def instance(cls):
         if cls._limiter is None:  # pragma: no cover
