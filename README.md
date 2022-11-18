@@ -34,7 +34,7 @@ The following settings are required to start the application.
 ```env
 TENANT_ID= # Your Azure AD Tenant ID
 API_CLIENT_ID= # The Azure AD Application ID used by your API
-OPENAPI_CLIENT_ID= # The Azure AD Application ID used by the OpenAPI frontend 
+OPENAPI_CLIENT_ID= # The Azure AD Application ID used by the OpenAPI frontend
 ```
 
 You can find additional configuration options in the [config.py](./app/config.py) file.
