@@ -34,7 +34,7 @@ async def get_greeting(
     request: Request, response: Response, user: User = Depends(get_required_user)
 ):
     logger.info(f"User {user.claims.get('oid')} is requesting a greeting.")
-    return Greeting(greeting=f"Hello {user.claims.get('name')}!")
+    return Greeting(greeting=f"Hello {user.name}!")
 
 
 @router.get(
