@@ -11,7 +11,6 @@ class MockSecurity:
         pass
 
     @classmethod
-    @property
     def instance(cls):
         return MockSecurityBase()
 

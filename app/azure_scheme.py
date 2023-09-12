@@ -1,5 +1,3 @@
-from functools import cache
-
 from app.packages.auth import OidcAuthorizationCodeBearer
 from app.packages.auth.util import get_azure_oidc_config_url
 
@@ -19,8 +17,6 @@ class AzureScheme:
         )
 
     @classmethod
-    @property
-    @cache
     def instance(cls):
         if cls._scheme is None:  # pragma: no cover
             raise RuntimeError("AzureScheme not initialized")

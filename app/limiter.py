@@ -1,5 +1,3 @@
-from functools import cache
-
 from fastapi import Request
 from slowapi import Limiter
 
@@ -37,8 +35,6 @@ class RateLimit:
         return cls._limiter
 
     @classmethod
-    @property
-    @cache
     def instance(cls):
         if cls._limiter is None:  # pragma: no cover
             raise RuntimeError("RateLimit not initialized")
